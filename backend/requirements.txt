@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+sqlalchemy
+requests
+passlib[bcrypt]
+python-jose[cryptography]
+smartapi-python
+duckduckgo-search
+pyotp
+python-dotenv
+cryptography
+redis
+psycopg2-binary
