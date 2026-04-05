@@ -1,0 +1,59 @@
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: insight_user
+      POSTGRES_PASSWORD: insight_pass
+      POSTGRES_DB: insight_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U insight_user -d insight_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - vj-network
+
+  redis:
+    image: redis:7-alpine
+    networks:
+      - vj-network
+
+  backend:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql://insight_user:insight_pass@db/insight_db
+      SECRET_KEY: ${SECRET_KEY:-BqWcL2tUnbeBUFKyVCa4KwmJA0KIBp8kdoT9S1BPxxA}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-YOUR_GOOGLE_CLIENT_ID}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    ports:
+      - "8001:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - vj-network
+
+  frontend:
+    build: 
+      context: ./frontend
+      args:
+        VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-YOUR_GOOGLE_CLIENT_ID}
+    ports:
+      - "8081:80"
+    depends_on:
+      backend:
+        condition: service_started
+    networks:
+      - vj-network
+
+networks:
+  vj-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
