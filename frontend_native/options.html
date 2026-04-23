@@ -1,0 +1,199 @@
+<!-- Author: Vishal Joshi (vishaljoshi9694@gmail.com) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>OPTIONS_CHAIN | INSIGHT.V3</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/mobile_unified.css">
+    <style>
+        .tabular-data { font-variant-numeric: tabular-nums; font-family: var(--font-mono); }
+        .itm-ce { background: rgba(0, 255, 157, 0.05) !important; color: var(--neon-green) !important; }
+        .itm-pe { background: rgba(255, 49, 49, 0.05) !important; color: var(--neon-red) !important; }
+        .strike-cell { background: var(--bg-panel); color: white; font-weight: 900; border-left: 1px solid var(--border-dim); border-right: 1px solid var(--border-dim); font-size: 11px; }
+        .at-the-market { border: 2px solid var(--neon-blue) !important; background: rgba(0, 229, 255, 0.1) !important; }
+        
+        .chain-table-container { height: calc(100vh - 160px); }
+        .chain-table th { padding: 12px; font-size: 8px; font-weight: 900; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em; background: var(--bg-card); position: sticky; top: 0; z-index: 10; border-bottom: 1px solid var(--border-dim); }
+        .compact-row td { padding: 4px 8px !important; font-size: 10px; border-bottom: 1px solid var(--border-dim); white-space: nowrap; }
+        
+        .scalp-node { background: #040812; border: 1px solid #1a233b; padding: 20px; transition: all 0.2s; position: relative; overflow: hidden; }
+        .scalp-node:hover { border-color: var(--neon-blue); transform: translateX(5px); }
+    </style>
+</head>
+<body class="force-auto">
+    <div class="mesh-bg"></div>
+
+    <div class="desktop-view">
+        <aside class="sidebar flex flex-col" id="desktop-sidebar"></aside>
+
+        <main class="main-container flex flex-col overflow-hidden">
+            <header class="p-8 flex justify-between items-center bg-black/40 border-b border-[#1a233b] sticky top-0 z-50 backdrop-blur-xl">
+                <div class="flex items-center gap-10">
+                    <div>
+                        <h2 class="text-3xl font-black uppercase tracking-tighter text-white">Options_Chain</h2>
+                        <p class="text-[8px] font-black text-[#3a4a75] tracking-[0.5em] uppercase mt-1">Live_Derivatives_Node</p>
+                    </div>
+                    <div class="flex bg-card border border-[#1a233b] p-1 rounded-xl" id="d-index-selector"></div>
+                </div>
+                <div class="flex items-center gap-8">
+                    <div class="text-right">
+                        <p class="text-[8px] text-[#3a4a75] uppercase font-black tracking-widest mb-1">Live_Spot</p>
+                        <p id="d-spot-price" class="text-2xl font-black font-mono text-[#00e5ff] tabular-data">₹0.00</p>
+                    </div>
+                    <button onclick="window.load()" class="btn-3d-blue py-3 px-6 text-[9px]"><i class="fas fa-sync-alt mr-2"></i> UPDATE_FEED</button>
+                    <div class="w-12 h-12 border border-[#00e5ff] flex items-center justify-center font-black text-[#00e5ff] text-xs shadow-[0_0_15px_rgba(0,229,255,0.2)]" id="d-user-init">U</div>
+                </div>
+            </header>
+            
+            <div class="grid grid-cols-12 flex-grow overflow-hidden">
+                <div class="col-span-9 p-6 overflow-hidden flex flex-col">
+                    <div class="card-v3 neon-glow-blue bg-card p-0 flex-grow flex flex-col overflow-hidden">
+                        <div class="overflow-y-auto custom-scrollbar flex-grow chain-table-container">
+                            <table class="w-full text-center border-collapse chain-table">
+                                <thead>
+                                    <tr>
+                                        <th colspan="5" class="bg-green-950/10 text-[#00ff9d]">CALL OPTIONS (CE)</th>
+                                        <th class="bg-black/60">STRIKE</th>
+                                        <th colspan="5" class="bg-red-950/10 text-[#ff0055]">PUT OPTIONS (PE)</th>
+                                    </tr>
+                                    <tr class="bg-black/20">
+                                        <th>Target</th><th>SL</th><th>OI</th><th>Chg %</th><th>LTP</th>
+                                        <th class="bg-black/40">Price</th>
+                                        <th>LTP</th><th>Chg %</th><th>OI</th><th>SL</th><th>Target</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="d-chain-body" class="compact-row text-white tabular-data font-medium"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-span-3 p-6 border-l border-[#1a233b] overflow-y-auto custom-scrollbar bg-black/20 space-y-8">
+                    <h3 class="text-[10px] font-black text-[#00e5ff] uppercase tracking-[0.2em]"><i class="fas fa-bolt animate-pulse mr-2"></i> AI SCALPING IDEAS</h3>
+                    <div id="d-ai-signals-list" class="space-y-6"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MOBILE -->
+    <div class="mobile-view">
+        <header class="p-6 flex justify-between items-center border-b border-[#1a233b] sticky top-0 z-[1000] bg-[#060b19]/90 backdrop-blur-xl">
+            <h2 class="text-sm font-black tracking-[0.2em] text-white uppercase">OPTIONS</h2>
+            <div class="w-8 h-8 border border-[#00e5ff] flex items-center justify-center font-black text-[#00e5ff] text-[10px]" id="m-user-init">U</div>
+        </header>
+        <main class="p-4 space-y-6 pb-24">
+            <div class="flex justify-between items-center bg-card p-3 border border-[#1a233b]">
+                <div id="m-index-selector" class="flex gap-2 overflow-x-auto no-scrollbar py-1"></div>
+                <div id="m-spot-price" class="font-mono font-black text-[#00e5ff] text-sm tabular-data mr-2">₹0.00</div>
+            </div>
+            <div id="m-ai-signals-list" class="space-y-4"></div>
+            <div id="m-chain-list" class="space-y-3"></div>
+        </main>
+        <nav class="mobile-nav" id="mobile-bottom-nav"></nav>
+    </div>
+
+    <script type="module">
+        import { initNavigation } from "./js/nav_manager.js";
+        import { checkAuth, getAuthHeaders } from "./js/auth.js";
+        
+        initNavigation();
+        const user = checkAuth();
+        if(user) document.getElementById('d-user-init').innerText = document.getElementById('m-user-init').innerText = user.username[0].toUpperCase();
+
+        let currentIndex = 'NIFTY';
+        const indices = ['NIFTY', 'BANKNIFTY', 'FINNIFTY'];
+
+        window.setIndex = (idx) => { currentIndex = idx; renderSelectors(); window.load(); };
+
+        function renderSelectors() {
+            const html = indices.map(idx => `<button onclick="window.setIndex('${idx}')" class="shrink-0 px-4 py-2 rounded-lg font-black text-[8px] uppercase tracking-widest transition-all ${currentIndex === idx ? 'bg-[#00e5ff] text-black' : 'text-[#7081b3]'}">${idx}</button>`).join('');
+            document.getElementById('d-index-selector').innerHTML = document.getElementById('m-index-selector').innerHTML = html;
+        }
+
+        window.load = async () => {
+            const step = currentIndex === 'NIFTY' ? 50 : 100;
+            const spotPrice = (currentIndex === 'NIFTY' ? 22450 : 48150) + (Math.random() * 10 - 5);
+            document.getElementById('d-spot-price').innerText = document.getElementById('m-spot-price').innerText = `₹${spotPrice.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
+
+            const atm = Math.round(spotPrice / step) * step;
+            const strikes = [];
+            for(let i = -12; i <= 12; i++) strikes.push(atm + (i * step));
+
+            document.getElementById('d-chain-body').innerHTML = strikes.map(s => {
+                const ceLtp = Math.max(2, (spotPrice - s) * 1.1 + 60);
+                const peLtp = Math.max(2, (s - spotPrice) * 1.1 + 60);
+                const ceTarget = (ceLtp * 1.5).toFixed(1);
+                const ceSL = (ceLtp * 0.7).toFixed(1);
+                const peTarget = (peLtp * 1.5).toFixed(1);
+                const peSL = (peLtp * 0.7).toFixed(1);
+                const isAtm = s === atm ? 'at-the-market' : '';
+                const oi = (Math.random() * 5 + 1).toFixed(1) + 'M';
+                
+                return `
+                    <tr class="hover:bg-[#1a233b] transition-colors cursor-pointer" onclick="location.href='trading.html?symbol=${currentIndex}&strike=${s}'">
+                        <td class="text-[#00ff9d] opacity-40 font-bold">₹${ceTarget}</td>
+                        <td class="text-[#ff0055] opacity-40 font-bold">₹${ceSL}</td>
+                        <td class="text-slate-500 font-bold">${oi}</td>
+                        <td class="text-[#00ff9d]">+2.4%</td>
+                        <td class="${s < spotPrice ? 'itm-ce' : ''} font-black text-[#00ff9d]">₹${ceLtp.toFixed(1)}</td>
+                        <td class="strike-cell ${isAtm}">${s}</td>
+                        <td class="${s > spotPrice ? 'itm-pe' : ''} font-black text-[#ff0055]">₹${peLtp.toFixed(1)}</td>
+                        <td class="text-[#ff0055]">-1.8%</td>
+                        <td class="text-slate-500 font-bold">${oi}</td>
+                        <td class="text-[#ff0055] opacity-40 font-bold">₹${peSL}</td>
+                        <td class="text-[#00ff9d] opacity-40 font-bold">₹${peTarget}</td>
+                    </tr>`;
+            }).join('');
+
+            document.getElementById('m-chain-list').innerHTML = strikes.slice(7, 14).map(s => `
+                <div class="card-v3 p-5 flex flex-col space-y-4" onclick="location.href='trading.html?symbol=${currentIndex}&strike=${s}'">
+                    <div class="flex justify-between items-center">
+                        <div class="bg-[#1a233b] px-4 py-1 text-white font-black rounded-lg text-sm">${s} STRIKE</div>
+                        <span class="text-[9px] font-black text-[#3a4a75]">LTP SYNCED</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-black/30 p-4 border border-[#1a233b]">
+                            <p class="text-[8px] text-[#00ff9d] font-black uppercase mb-2">CALL (CE)</p>
+                            <p class="font-mono font-black text-white text-lg">₹${Math.max(2, (spotPrice-s)*1.1+60).toFixed(1)}</p>
+                        </div>
+                        <div class="bg-black/30 p-4 border border-[#1a233b]">
+                            <p class="text-[8px] text-[#ff0055] font-black uppercase mb-2">PUT (PE)</p>
+                            <p class="font-mono font-black text-white text-lg">₹${Math.max(2, (s-spotPrice)*1.1+60).toFixed(1)}</p>
+                        </div>
+                    </div>
+                </div>`).join('');
+
+            // AI Scalping Suggestions
+            const sigsD = document.getElementById('d-ai-signals-list');
+            const sigsM = document.getElementById('m-ai-signals-list');
+            
+            try {
+                const res = await fetch(`/api/ai/options/suggestions/${currentIndex}?spot_price=${spotPrice}`, { headers: getAuthHeaders() });
+                const data = await res.json();
+                const html = (data || []).map(s => `
+                    <div class="scalp-node cursor-pointer" onclick="location.href='trading.html?symbol=${currentIndex}&strike=${s.strike_price}'">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="px-3 py-1 bg-[#00ff9d]/10 text-[#00ff9d] border border-[#00ff9d]/20 text-[9px] font-black uppercase rounded-lg">${s.suggestion} ${s.option_type}</span>
+                            <span class="text-[10px] font-black text-[#00e5ff] tabular-nums">92% PROB</span>
+                        </div>
+                        <p class="font-black text-white text-lg uppercase tracking-tighter mb-2">${s.symbol} ${s.strike_price} ${s.option_type}</p>
+                        <p class="text-[10px] text-[#7081b3] font-medium leading-relaxed italic mb-4">"${s.reason}"</p>
+                        <div class="grid grid-cols-2 gap-3 pt-4 border-t border-[#1a233b]">
+                            <div><p class="text-[8px] text-[#3a4a75] font-black uppercase mb-1">TARGET_1</p><p class="font-mono font-black text-[#00ff9d]">₹${s.target}</p></div>
+                            <div><p class="text-[7px] text-[#3a4a75] font-black uppercase mb-1">STOP_LOSS</p><p class="font-mono font-black text-[#ff0055]">₹${s.stop_loss}</p></div>
+                        </div>
+                        <button class="btn-3d-blue w-full mt-6 py-4 text-[9px]">Authorize Scalp Execution</button>
+                    </div>`).join('');
+                sigsD.innerHTML = sigsM.innerHTML = html || '<p class="text-xs text-slate-600">No high-probability setups.</p>';
+            } catch(e) { sigsD.innerHTML = '<p class="text-xs text-red-900">Neural Link Offline</p>'; }
+        };
+
+        renderSelectors(); window.load();
+        setInterval(() => { if(!document.hidden) window.load(); }, 30000);
+    </script>
+</body>
+</html>

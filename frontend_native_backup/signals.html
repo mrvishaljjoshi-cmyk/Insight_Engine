@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI Alpha Signals | Insight</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/mobile_unified.css">
+    <style>
+        .tabular-data { font-variant-numeric: tabular-nums; }
+        .signal-card { background: #0f172a; border: 1px solid #1e293b; border-radius: 2.2rem; padding: 2.2rem; transition: all 0.4s; }
+        .signal-card:hover { border-color: rgba(59, 130, 246, 0.4); transform: translateY(-8px); box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.6); }
+        .segment-btn { padding: 0.8rem 1.8rem; border-radius: 1.2rem; font-weight: 900; text-transform: uppercase; font-size: 10px; letter-spacing: 0.15em; transition: all 0.3s; border: 1px solid #1e293b; color: #64748b; }
+        .segment-btn.active { background: #2563eb; color: white; border-color: #2563eb; box-shadow: 0 10px 15px rgba(37, 99, 235, 0.2); }
+    </style>
+</head>
+<body class="force-auto">
+    <!-- Author: Vishal Joshi (vishaljoshi9694@gmail.com) -->
+    <!-- DESKTOP -->
+    <div class="desktop-view">
+        <aside class="sidebar flex flex-col p-4" id="desktop-sidebar"></aside>
+
+        <main class="main-container custom-scrollbar">
+            <header class="p-8 flex justify-between items-center glass sticky top-0 z-50">
+                <div class="flex items-center gap-10">
+                    <h2 class="text-2xl font-black uppercase tracking-tighter">Alpha Intelligence</h2>
+                    <div class="flex bg-slate-900 p-1 rounded-2xl border border-slate-800" id="d-segment-selector"></div>
+                </div>
+                <div class="flex gap-4 items-center">
+                    <button onclick="window.loadSignals()" class="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center border border-slate-800 hover:text-blue-400 transition-all"><i class="fas fa-sync-alt" id="refresh-icon-d"></i></button>
+                    <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center font-black shadow-lg" id="d-user-init">U</div>
+                </div>
+            </header>
+
+            <div class="p-8 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8" id="d-signals-grid"></div>
+            <div id="d-no-signals" class="hidden py-40 text-center flex flex-col items-center">
+                <i class="fas fa-satellite-dish text-5xl text-slate-800 mb-8 animate-pulse"></i>
+                <h3 class="text-xl font-black text-slate-500 uppercase tracking-widest">Neural Link Synchronizing...</h3>
+            </div>
+        </main>
+    </div>
+
+    <!-- MOBILE -->
+    <div class="mobile-view">
+        <header class="p-6 flex justify-between items-center glass sticky top-0 z-[1000]">
+            <h2 class="text-xl font-black tracking-tighter uppercase">AI CALLS</h2>
+            <div class="flex gap-2">
+                <button onclick="window.loadSignals()" class="w-9 h-9 bg-slate-800 rounded-xl flex items-center justify-center text-blue-400 border border-slate-700 shadow-lg"><i class="fas fa-sync-alt" id="refresh-icon-m"></i></button>
+                <div class="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center font-black shadow-lg" id="m-user-init">U</div>
+            </div>
+        </header>
+
+        <main class="p-4 space-y-6 pb-24">
+            <div id="m-segment-selector" class="flex gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800 overflow-x-auto no-scrollbar"></div>
+            <div id="m-signals-grid" class="space-y-6"></div>
+        </main>
+
+        <nav class="mobile-nav" id="mobile-bottom-nav"></nav>
+    </div>
+
+    <script type="module">
+        /** Author: Vishal Joshi (vishaljoshi9694@gmail.com) **/
+        import { initNavigation } from "./js/nav_manager.js";
+        import { checkAuth, getAuthHeaders } from "./js/auth.js";
+        import { getSignals } from "./js/api.js";
+
+        initNavigation();
+        const user = checkAuth();
+        document.getElementById('d-user-init').innerText = document.getElementById('m-user-init').innerText = user.username[0].toUpperCase();
+
+        let currentSegment = 'STOCK';
+        const segments = ['STOCK', 'OPTION', 'MCX'];
+
+        window.setSegment = (seg) => {
+            currentSegment = seg;
+            renderSelectors();
+            window.loadSignals();
+        };
+
+        function renderSelectors() {
+            const html = segments.map(s => `
+                <button onclick="window.setSegment('${s}')" class="segment-btn whitespace-nowrap ${currentSegment === s ? 'active' : ''}">${s}</button>
+            `).join('');
+            document.getElementById('d-segment-selector').innerHTML = html;
+            document.getElementById('m-segment-selector').innerHTML = html;
+        }
+
+        window.loadSignals = async () => {
+            const gridD = document.getElementById('d-signals-grid');
+            const gridM = document.getElementById('m-signals-grid');
+            const icons = [document.getElementById('refresh-icon-d'), document.getElementById('refresh-icon-m')];
+            icons.forEach(i => i?.classList.add('fa-spin'));
+            
+            try {
+                const signals = await getSignals(currentSegment);
+                const html = (signals || []).map(s => {
+                    const isBull = s.signal_type.includes('BULL') || s.signal_type === 'BUY';
+                    const color = isBull ? 'green' : 'red';
+                    return `
+                        <div class="signal-card border-white/5 flex flex-col cursor-pointer group shadow-2xl" onclick="location.href='trading.html?symbol=${s.symbol}'">
+                            <div class="flex justify-between items-start mb-8">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-14 h-14 bg-${color}-500/10 rounded-2xl flex items-center justify-center border border-${color}-500/20 shadow-inner">
+                                        <i class="fas fa-${isBull ? 'arrow-trend-up' : 'arrow-trend-down'} text-${color}-400 text-xl"></i>
+                                    </div>
+                                    <div><p class="font-black text-2xl text-white tracking-tighter">${s.symbol}</p><p class="text-[9px] font-black uppercase text-${color}-500 tracking-widest mt-1">${s.signal_type.replace('_', ' ')}</p></div>
+                                </div>
+                                <div class="text-right"><p class="text-[8px] font-black text-slate-500 uppercase mb-1">AI Logic</p><p class="text-xl font-black text-blue-400 tabular-data">${s.strength || 85}%</p></div>
+                            </div>
+                            <div class="p-5 bg-slate-950/80 rounded-2xl mb-8 border border-white/5 shadow-inner"><p class="text-xs text-slate-300 leading-relaxed italic font-medium">"${s.narrative || 'Breakout confirmed on high-volume neural validation.'}"</p></div>
+                            <div class="grid grid-cols-2 gap-4 mb-8">
+                                <div class="bg-slate-900 p-4 rounded-2xl border border-white/5 text-center"><p class="text-[7px] text-slate-500 font-black uppercase mb-1">Entry Range</p><p class="font-mono font-black text-white text-sm tabular-data">₹${(s.entry_price || 0).toFixed(1)}</p></div>
+                                <div class="bg-slate-900 p-4 rounded-2xl border border-white/5 text-center"><p class="text-[7px] text-slate-500 font-black uppercase mb-1">Neural Target</p><p class="font-mono font-black text-green-400 text-sm tabular-data">₹${(s.target || 0).toFixed(1)}</p></div>
+                            </div>
+                            <button class="mt-auto w-full py-5 bg-${color}-600 hover:bg-${color}-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all shadow-xl active:scale-95">AUTHORIZE EXECUTION</button>
+                        </div>
+                    `;
+                }).join('');
+                
+                gridD.innerHTML = gridM.innerHTML = html || '<div class="col-span-full py-20 text-center text-slate-500 font-black uppercase text-[10px] tracking-widest">Awaiting Alpha Breakouts...</div>';
+            } catch (e) { console.error(e); }
+            finally { icons.forEach(i => i?.classList.remove('fa-spin')); }
+        };
+
+        renderSelectors(); window.loadSignals();
+        setInterval(window.loadSignals, 60000);
+    </script>
+</body>
+</html>

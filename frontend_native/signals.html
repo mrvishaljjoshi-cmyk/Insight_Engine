@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ALPHA_INTELLIGENCE | INSIGHT.V3</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/mobile_unified.css">
+    <style>
+        .segment-node { padding: 14px 28px; border: 1px solid var(--border-dim); font-weight: 900; text-transform: uppercase; font-size: 10px; letter-spacing: 0.2em; transition: all 0.3s; color: var(--text-dim); background: rgba(0,0,0,0.4); }
+        .segment-node.active { background: var(--bg-active); color: var(--primary-neon); border-color: var(--primary-neon); box-shadow: var(--neon-glow); }
+        
+        .card-v3 { background: rgba(14, 20, 40, 0.8); border: 1px solid var(--border-dim); padding: 3rem; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden; }
+        .card-v3:hover { border-color: var(--border-neon); transform: translateY(-4px); box-shadow: var(--neon-glow-strong); }
+        
+        .strength-track { height: 2px; background: #1a233b; width: 100%; position: relative; margin-top: 10px; }
+        .strength-bar { height: 100%; background: var(--primary-neon); box-shadow: 0 0 10px var(--primary-neon); transition: width 1s ease-out; }
+        
+        .logic-trace { background: #040812; border: 1px solid #1a233b; padding: 20px; position: relative; }
+        .logic-trace::after { content: "NEURAL_LOGIC_V4.2"; position: absolute; bottom: 6px; right: 12px; font-size: 6px; font-weight: 900; color: #1a233b; }
+    </style>
+</head>
+<body class="force-auto">
+    <!-- Author: Vishal Joshi (vishaljoshi9694@gmail.com) -->
+    <div class="desktop-view">
+        <aside class="sidebar flex flex-col" id="desktop-sidebar"></aside>
+
+        <main class="main-container custom-scrollbar">
+            <header class="p-10 flex justify-between items-center bg-black/40 border-b border-[#1a233b] sticky top-0 z-50 backdrop-blur-xl">
+                <div class="flex items-center gap-14">
+                    <div>
+                        <h2 class="text-3xl font-black uppercase tracking-tighter text-white">Alpha_Intelligence</h2>
+                        <p class="text-[8px] font-black text-[#3a4a75] tracking-[0.5em] uppercase mt-1">Neural_Matrix_Sync_Active</p>
+                    </div>
+                    <div class="flex bg-black/60 border border-[#1a233b]" id="d-segment-selector"></div>
+                </div>
+                <div class="flex gap-6 items-center">
+                    <button onclick="window.loadSignals()" class="w-14 h-14 border border-[#1a233b] hover:border-[#00e5ff] hover:text-[#00e5ff] flex items-center justify-center transition-all bg-black shadow-lg"><i class="fas fa-sync-alt text-xs" id="refresh-icon-d"></i></button>
+                    <div class="w-12 h-12 border border-[#00e5ff] flex items-center justify-center font-black text-[#00e5ff] text-xs shadow-[0_0_15px_rgba(0,229,255,0.2)]" id="d-user-init">U</div>
+                </div>
+            </header>
+
+            <div class="p-12 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-12" id="d-signals-grid"></div>
+            
+            <div id="d-no-signals" class="hidden py-40 text-center flex flex-col items-center">
+                <i class="fas fa-satellite-dish text-6xl text-[#1a233b] mb-10 animate-pulse"></i>
+                <h3 class="text-sm font-black text-[#1a233b] uppercase tracking-[0.6em]">Scanning_Alpha_Nodes...</h3>
+            </div>
+        </main>
+    </div>
+
+    <div class="mobile-view">
+        <header class="p-6 flex justify-between items-center border-b border-[#1a233b] sticky top-0 z-[1000] bg-[#060b19]/90 backdrop-blur-xl">
+            <h2 class="text-sm font-black tracking-[0.3em] text-white uppercase">AI_CALLS</h2>
+            <div class="flex gap-4">
+                <button onclick="window.loadSignals()" class="text-[#00e5ff]"><i class="fas fa-sync-alt text-xs" id="refresh-icon-m"></i></button>
+                <div class="w-8 h-8 border border-[#00e5ff] flex items-center justify-center font-black text-[10px] text-[#00e5ff]" id="m-user-init">U</div>
+            </div>
+        </header>
+
+        <main class="p-4 space-y-8 pb-24">
+            <div id="m-segment-selector" class="flex gap-px bg-[#1a233b] border border-[#1a233b] overflow-x-auto no-scrollbar"></div>
+            <div id="m-signals-grid" class="space-y-8"></div>
+        </main>
+
+        <nav class="mobile-nav" id="mobile-bottom-nav"></nav>
+    </div>
+
+    <script type="module">
+        import { initNavigation } from "./js/nav_manager.js";
+        import { checkAuth } from "./js/auth.js";
+        import { getSignals } from "./js/api.js";
+
+        initNavigation();
+        const user = checkAuth();
+        if(user) document.getElementById('d-user-init').innerText = document.getElementById('m-user-init').innerText = user.username[0].toUpperCase();
+
+        let currentSegment = 'STOCK';
+        const segments = ['STOCK', 'OPTION', 'MCX'];
+
+        window.setSegment = (seg) => { currentSegment = seg; renderSelectors(); window.loadSignals(); };
+
+        function renderSelectors() {
+            const html = segments.map(s => `<button onclick="window.setSegment('${s}')" class="segment-node whitespace-nowrap ${currentSegment === s ? 'active' : ''} font-black">${s}</button>`).join('');
+            document.getElementById('d-segment-selector').innerHTML = document.getElementById('m-segment-selector').innerHTML = html;
+        }
+
+        window.loadSignals = async () => {
+            const gridD = document.getElementById('d-signals-grid');
+            const gridM = document.getElementById('m-signals-grid');
+            const noSignals = document.getElementById('d-no-signals');
+            const icons = [document.getElementById('refresh-icon-d'), document.getElementById('refresh-icon-m')];
+            icons.forEach(i => i?.classList.add('fa-spin'));
+            noSignals.classList.remove('hidden'); gridD.innerHTML = gridM.innerHTML = '';
+            try {
+                const signals = await getSignals(currentSegment);
+                const html = (signals || []).map(s => {
+                    const isBull = s.signal_type.includes('BULL') || s.signal_type === 'BUY';
+                    const colorClass = isBull ? 'pnl-green' : 'pnl-red';
+                    return `
+                        <div class="card-v3 flex flex-col cursor-pointer group shadow-2xl" onclick="location.href='trading.html?symbol=${s.symbol}'">
+                            <div class="flex justify-between items-start mb-10">
+                                <div class="flex items-center gap-6">
+                                    <div class="w-16 h-16 bg-black border border-[#1a233b] flex items-center justify-center group-hover:border-[#00e5ff] transition-all">
+                                        <i class="fas fa-${isBull ? 'arrow-trend-up' : 'arrow-trend-down'} ${colorClass} text-2xl"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-black text-3xl text-white tracking-tighter tabular-nums uppercase">${s.symbol}</p>
+                                        <p class="text-[9px] font-black uppercase ${colorClass} tracking-widest mt-1">${s.signal_type.replace('_', ' ')}</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-[8px] font-black text-[#3a4a75] uppercase tracking-widest mb-1">PROBABILITY</p>
+                                    <p class="text-2xl font-black text-[#00e5ff] tabular-nums">${s.strength || 85}%</p>
+                                    <div class="strength-track"><div class="strength-bar" style="width: ${s.strength || 85}%"></div></div>
+                                </div>
+                            </div>
+                            <div class="logic-trace mb-10"><p class="text-xs text-slate-400 font-medium leading-relaxed italic">"${s.narrative || 'High-volume neural validation at critical support node.'}"</p></div>
+                            <div class="grid grid-cols-2 gap-px bg-[#1a233b] border border-[#1a233b] mb-10">
+                                <div class="bg-black p-6 text-center"><p class="text-[8px] text-[#3a4a75] font-black uppercase tracking-widest mb-2">ENTRY_NODE</p><p class="font-mono font-black text-white text-lg tabular-nums">₹${(s.entry_price || 0).toLocaleString('en-IN', {minimumFractionDigits: 1})}</p></div>
+                                <div class="bg-black p-6 text-center"><p class="text-[8px] text-[#3a4a75] font-black uppercase tracking-widest mb-2">ALPHA_TARGET</p><p class="font-mono font-black text-[#00ff9d] text-lg tabular-nums">₹${(s.target || 0).toLocaleString('en-IN', {minimumFractionDigits: 1})}</p></div>
+                            </div>
+                            <button class="btn-3d-blue w-full py-6 text-[12px]">AUTHORIZE_NODE_EXECUTION</button>
+                        </div>`;
+                }).join('');
+                noSignals.classList.add('hidden');
+                gridD.innerHTML = gridM.innerHTML = html || '<div class="col-span-full py-20 text-center text-[#1a233b] font-black uppercase text-xs tracking-widest">Awaiting_Neural_Breakouts...</div>';
+            } catch (e) { gridD.innerHTML = '<div class="text-center text-red-900 font-black uppercase text-xs">Link_Failure</div>'; }
+            finally { icons.forEach(i => i?.classList.remove('fa-spin')); }
+        };
+        renderSelectors(); window.loadSignals();
+    </script>
+</body>
+</html>

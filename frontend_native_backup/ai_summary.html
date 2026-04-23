@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI Strategy | Insight</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/mobile_unified.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        .tabular-data { font-variant-numeric: tabular-nums; }
+        .ai-card {
+            background: #0f172a;
+            border: 1px solid #1e293b;
+            border-radius: 2.5rem;
+            padding: 2.5rem;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .ai-card:hover {
+            border-color: rgba(59, 130, 246, 0.4);
+            transform: translateY(-8px);
+            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.6);
+        }
+        .rec-tag {
+            padding: 0.5rem 1.2rem;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+        }
+    </style>
+</head>
+<body class="force-auto">
+    <!-- Author: Vishal Joshi (vishaljoshi9694@gmail.com) -->
+    <!-- DESKTOP -->
+    <div class="desktop-view">
+        <aside class="sidebar flex flex-col p-4" id="desktop-sidebar"></aside>
+
+        <main class="main-container custom-scrollbar">
+            <header class="p-8 flex justify-between items-center glass sticky top-0 z-50">
+                <div class="flex items-center gap-6">
+                    <h2 class="text-2xl font-black uppercase tracking-tighter">Master AI Strategy</h2>
+                    <span class="text-[9px] font-black text-blue-400 uppercase tracking-[0.3em]"><i class="fas fa-atom fa-spin-slow mr-2"></i>Neural Core Synchronized</span>
+                </div>
+                <div class="flex gap-4">
+                    <button onclick="window.generateDetailedPDF()" class="bg-blue-600 hover:bg-blue-500 px-8 py-3 rounded-2xl font-black text-[10px] uppercase text-white shadow-xl transition-all active:scale-95"><i class="fas fa-file-pdf mr-2"></i> Neural Intelligence Report</button>
+                    <button onclick="window.fetchSummary(true)" class="bg-slate-800 hover:bg-slate-700 px-8 py-3 rounded-2xl font-black text-[10px] uppercase text-slate-400 border border-slate-700 transition-all"><i class="fas fa-sync-alt mr-2"></i> Recalibrate</button>
+                    <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center font-black shadow-lg" id="d-user-init">U</div>
+                </div>
+            </header>
+            <div class="p-8 grid grid-cols-1 lg:grid-cols-2 gap-10" id="d-ai-list"></div>
+        </main>
+    </div>
+
+    <!-- MOBILE -->
+    <div class="mobile-view">
+        <header class="p-6 flex justify-between items-center glass sticky top-0 z-[1000]">
+            <h2 class="text-xl font-black tracking-tighter uppercase">AI ADVISOR</h2>
+            <div class="flex gap-3">
+                <button onclick="window.generateDetailedPDF()" class="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg"><i class="fas fa-file-pdf"></i></button>
+                <div class="w-9 h-9 bg-slate-800 rounded-xl flex items-center justify-center text-blue-400 border border-slate-700" id="m-user-init">U</div>
+            </div>
+        </header>
+
+        <main class="p-4 space-y-6">
+            <button onclick="window.fetchSummary(true)" class="w-full py-5 bg-slate-900 border border-slate-800 rounded-[2rem] font-black text-[10px] uppercase tracking-[0.2em] text-blue-400 shadow-xl active:scale-95 transition-all"><i class="fas fa-atom fa-spin-slow mr-2"></i> Force Core Sync</button>
+            <div id="m-ai-list" class="space-y-6 pb-24"></div>
+        </main>
+
+        <nav class="mobile-nav" id="mobile-bottom-nav"></nav>
+    </div>
+
+    <script type="module">
+        /** Author: Vishal Joshi (vishaljoshi9694@gmail.com) **/
+        import { initNavigation } from "./js/nav_manager.js";
+        import { checkAuth, getAuthHeaders } from "./js/auth.js";
+        import { getAISummary, getHoldings } from "./js/api.js";
+
+        initNavigation();
+        const user = checkAuth();
+        document.getElementById('d-user-init').innerText = document.getElementById('m-user-init').innerText = user.username[0].toUpperCase();
+        
+        let lastData = [];
+        let holdings = {};
+
+        async function init() {
+            try {
+                const hData = await getHoldings();
+                hData.holdings.forEach(h => holdings[h.symbol] = h);
+                await fetchSummary(false); 
+            } catch (e) { console.error(e); }
+        }
+
+        window.fetchSummary = async (isManual) => {
+            const loader = '<div class="col-span-full py-20 text-center"><i class="fas fa-atom fa-spin text-5xl text-blue-500 mb-6"></i><p class="text-[11px] font-black text-slate-500 uppercase tracking-[0.3em]">Synthesizing Market Intelligence...</p></div>';
+            document.getElementById('d-ai-list').innerHTML = loader;
+            document.getElementById('m-ai-list').innerHTML = loader;
+            
+            try {
+                const url = isManual ? '/api/ai/summary/holdings?fresh=true' : '/api/ai/summary/holdings';
+                const res = await fetch(url, { headers: getAuthHeaders() });
+                const data = await res.json();
+                lastData = data.analyses;
+                render();
+            } catch (e) { console.error(e); }
+        };
+
+        function render() {
+            const listD = document.getElementById('d-ai-list');
+            const listM = document.getElementById('m-ai-list');
+            
+            const html = lastData.map((a, idx) => {
+                const h = holdings[a.symbol] || { avg_price: 0, quantity: 0, current_price: 0 };
+                const pnl = (h.current_price - h.avg_price) * h.quantity;
+                const recClass = a.recommendation === 'BUY' ? 'bg-green-600/20 text-green-400 border-green-500/20' : a.recommendation === 'SELL' ? 'bg-red-600/20 text-red-400 border-red-500/20' : 'bg-slate-800 text-slate-400 border-slate-700';
+                
+                const commonDetails = `
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-5 bg-green-500/5 border border-green-500/10 rounded-2xl"><p class="text-[8px] text-green-500 font-black uppercase mb-1 tracking-widest">Growth Catalysts</p><p class="text-[11px] font-bold text-slate-300 leading-relaxed">• ${a.pros[0]}<br>• ${a.pros[1]}</p></div>
+                        <div class="p-5 bg-red-500/5 border border-red-500/10 rounded-2xl"><p class="text-[8px] text-red-500 font-black uppercase mb-1 tracking-widest">Risk Vectors</p><p class="text-[11px] font-bold text-slate-300 leading-relaxed">• ${a.cons[0]}<br>• ${a.cons[1]}</p></div>
+                    </div>
+                `;
+
+                return {
+                    desktop: `
+                        <div class="ai-card border-white/5 shadow-2xl">
+                            <div class="flex justify-between items-start mb-10">
+                                <div class="flex items-center gap-5">
+                                    <div class="w-16 h-16 bg-slate-900 rounded-[1.5rem] flex items-center justify-center border border-slate-800 shadow-inner"><i class="fas fa-microchip text-blue-400 text-2xl"></i></div>
+                                    <div><h3 class="text-4xl font-black tracking-tighter text-white">${a.symbol}</h3><p class="text-[10px] font-black text-blue-500 uppercase tracking-[0.2em] mt-2">PULSE LTP: ₹${h.current_price || '--'}</p></div>
+                                </div>
+                                <span class="rec-tag border ${recClass}">${a.recommendation} SIGNAL</span>
+                            </div>
+                            <div class="p-6 bg-slate-950/80 rounded-3xl mb-8 border border-white/5 shadow-inner">
+                                <p class="text-[9px] font-black text-slate-500 uppercase mb-4 tracking-widest">Neural Narrative</p>
+                                <p class="text-slate-300 text-sm leading-relaxed italic font-medium">"${a.market_narrative || a.analysis}"</p>
+                            </div>
+                            ${commonDetails}
+                            <div class="mt-8 pt-8 border-t border-white/5 grid grid-cols-12 gap-6 items-center">
+                                <div class="col-span-8 grid grid-cols-2 gap-4">
+                                    <div class="bg-slate-950 p-4 rounded-2xl border border-white/5 text-center"><p class="text-[7px] text-slate-500 uppercase font-black mb-1">Target</p><p class="text-xl font-black text-green-400 tabular-data">₹${a.target_1.toFixed(1)}</p></div>
+                                    <div class="bg-slate-950 p-4 rounded-2xl border border-white/5 text-center"><p class="text-[7px] text-slate-500 uppercase font-black mb-1">Stop Loss</p><p class="text-xl font-black text-red-400 tabular-data">₹${a.stop_loss.toFixed(1)}</p></div>
+                                </div>
+                                <button onclick="location.href='trading.html?symbol=${a.symbol}'" class="col-span-4 h-full bg-blue-600 hover:bg-blue-500 rounded-2xl font-black text-[10px] uppercase text-white shadow-xl transition-all active:scale-[0.98]">Execute</button>
+                            </div>
+                        </div>
+                    `,
+                    mobile: `
+                        <div class="ai-card p-6 shadow-2xl border-white/5">
+                            <div class="flex justify-between items-start mb-6">
+                                <div><h3 class="text-2xl font-black tracking-tighter">${a.symbol}</h3><p class="text-[10px] font-black ${recClass.split(' ')[1]} uppercase tracking-widest">${a.recommendation} SIGNAL</p></div>
+                                <div class="text-right"><p class="font-mono font-black text-blue-400 text-lg">₹${h.current_price || '--'}</p></div>
+                            </div>
+                            <div class="flex gap-2 mb-8 border-b border-white/5 overflow-x-auto no-scrollbar">
+                                <button onclick="window.switchTab(${idx}, '1')" id="t-b-${idx}-1" class="tab-btn active">Intelligence</button>
+                                <button onclick="window.switchTab(${idx}, '2')" id="t-b-${idx}-2" class="tab-btn">Targets</button>
+                                <button onclick="window.switchTab(${idx}, '3')" id="t-b-${idx}-3" class="tab-btn">Holding</button>
+                            </div>
+                            <div id="t-c-${idx}-1" class="space-y-4">
+                                <div class="p-5 bg-slate-950 rounded-3xl border border-white/5"><p class="text-[12px] text-slate-300 font-medium leading-relaxed">${a.market_narrative || a.analysis}</p></div>
+                                ${commonDetails}
+                            </div>
+                            <div id="t-c-${idx}-2" class="hidden space-y-6">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="p-5 bg-slate-950 rounded-3xl border border-white/5 text-center"><p class="text-[7px] text-slate-500 uppercase mb-1">Target</p><p class="text-green-400 font-black text-xl">₹${a.target_1.toFixed(1)}</p></div>
+                                    <div class="p-5 bg-slate-950 rounded-3xl border border-white/5 text-center"><p class="text-[7px] text-slate-500 uppercase mb-1">Stop Loss</p><p class="text-red-400 font-black text-xl">₹${a.stop_loss.toFixed(1)}</p></div>
+                                </div>
+                                <button onclick="location.href='trading.html?symbol=${a.symbol}'" class="w-full py-5 bg-blue-600 rounded-[1.5rem] font-black text-xs uppercase text-white">Execute Scalp</button>
+                            </div>
+                            <div id="t-c-${idx}-3" class="hidden space-y-6">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="p-5 bg-slate-950 rounded-3xl border border-white/5 text-center"><p class="text-[7px] text-slate-500 uppercase mb-1">Size</p><p class="font-black text-white text-xl">${h.quantity || 0}</p></div>
+                                    <div class="p-5 bg-slate-950 rounded-3xl border border-white/5 text-center"><p class="text-[7px] text-slate-500 uppercase mb-1">Unrealized P&L</p><p class="font-black ${pnl >=0 ? 'text-green-400' : 'text-red-400'} text-xl">₹${pnl.toFixed(1)}</p></div>
+                                </div>
+                            </div>
+                        </div>
+                    `
+                };
+            });
+
+            listD.innerHTML = html.map(c => c.desktop).join('');
+            listM.innerHTML = html.map(c => c.mobile).join('');
+        }
+
+        window.switchTab = (idx, tab) => {
+            ['1', '2', '3'].forEach(t => {
+                document.getElementById(`t-c-${idx}-${t}`).classList.add('hidden');
+                document.getElementById(`t-b-${idx}-${t}`).classList.remove('active');
+            });
+            document.getElementById(`t-c-${idx}-${tab}`).classList.remove('hidden');
+            document.getElementById(`t-b-${idx}-${tab}`).classList.add('active');
+        };
+
+        window.generateDetailedPDF = () => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            lastData.forEach((a, index) => {
+                if (index > 0) doc.addPage();
+                const h = holdings[a.symbol] || { quantity: 0, avg_price: 0, current_price: 0 };
+                const pnl = (h.current_price - h.avg_price) * h.quantity;
+                
+                doc.setFillColor(2, 6, 23); doc.rect(0, 0, 210, 45, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(26); doc.text(a.symbol, 20, 25);
+                doc.setFontSize(9); doc.text("NEURAL INTELLIGENCE REPORT | INSIGHT ENGINE 3.0", 20, 34);
+                
+                doc.setTextColor(50);
+                doc.setFontSize(14); doc.text("I. Market Narrative", 20, 60);
+                doc.setFontSize(10); doc.text(doc.splitTextToSize(a.market_narrative || a.analysis, 175), 20, 68);
+                
+                doc.setFontSize(14); doc.text("II. Strategic SWOT Analysis", 20, 115);
+                doc.autoTable({ startY: 120, head: [['Growth Catalysts (Pros)', 'Risk Vectors (Cons)']], body: [[a.pros.join('\n'), a.cons.join('\n')]], theme: 'grid', styles: { fontSize: 9 } });
+                
+                doc.setFontSize(14); doc.text("III. Core Performance Metrics", 20, doc.lastAutoTable.finalY + 15);
+                doc.autoTable({ startY: doc.lastAutoTable.finalY + 20, head: [['Metric', 'Value', 'Assessment']], body: [
+                    ['Market LTP', `INR ${h.current_price}`, 'Live Price'],
+                    ['Cost Basis', `INR ${h.avg_price}`, 'Entry Price'],
+                    ['Quantity', h.quantity, 'Volume'],
+                    ['Current P&L', `${pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}`, pnl >= 0 ? 'Bullish' : 'Bearish'],
+                    ['Recommendation', a.recommendation, 'AI Signal'],
+                    ['Neural Target', `INR ${a.target_1}`, 'Profit Objective'],
+                    ['Stop Loss', `INR ${a.stop_loss}`, 'Capital Protection']
+                ], theme: 'striped', styles: { fontSize: 9 } });
+                
+                doc.setFontSize(8); doc.setTextColor(150);
+                doc.text("Generated by Insight Engine - Author: Vishal Joshi", 20, 285);
+            });
+            doc.save(`Insight_Neural_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+        };
+
+        init();
+    </script>
+</body>
+</html>

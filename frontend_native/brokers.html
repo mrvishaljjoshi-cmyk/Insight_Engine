@@ -1,0 +1,101 @@
+<!-- Author: Vishal Joshi (vishaljoshi9694@gmail.com) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Manage Brokers | Insight</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/mobile_unified.css">
+    <style>
+        .broker-card {
+            background: #1e293b;
+            border: 1px solid var(--border-dim);
+            border-radius: 2rem;
+            padding: 2.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .broker-card:hover {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.2);
+            transform: translateY(-4px);
+        }
+    </style>
+</head>
+<body class="force-auto bg-[#0f172a]">
+    <div class="desktop-view">
+        <aside class="sidebar flex flex-col" id="desktop-sidebar"></aside>
+
+        <main class="main-container custom-scrollbar">
+            <header class="p-10 flex justify-between items-center bg-black/40 border-b border-[#1e293b] sticky top-0 z-50 backdrop-blur-xl">
+                <div class="flex items-center gap-10">
+                    <div>
+                        <h2 class="text-3xl font-black uppercase tracking-tighter text-white">Broker Connections</h2>
+                        <p class="text-[8px] font-black text-[#00e5ff] tracking-[0.5em] uppercase mt-1">Demat Uplink Management</p>
+                    </div>
+                    <div class="px-6 py-3 bg-[#00ff9d]/5 rounded-xl border border-[#00ff9d]/20 text-[#00ff9d] text-[9px] font-black uppercase tracking-widest shadow-[0_0_15px_rgba(0,255,157,0.1)]">
+                        <i class="fas fa-shield-alt mr-2"></i> AES-256 Encryption Active
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <div class="w-12 h-12 border border-[#00e5ff] flex items-center justify-center font-black text-[#00e5ff] text-xs shadow-[0_0_15px_rgba(0,229,255,0.2)]" id="d-user-init">U</div>
+                </div>
+            </header>
+
+            <div class="p-12 grid grid-cols-12 gap-12">
+                <div class="col-span-5 space-y-10">
+                    <div class="flex items-center justify-between px-2">
+                        <h3 class="text-xs font-black text-[#7081b3] uppercase tracking-widest">Linked Demat Accounts</h3>
+                        <span class="text-[9px] font-black text-[#00ff9d] uppercase"><i class="fas fa-circle text-[6px] mr-2 animate-pulse"></i> All Nodes Stable</span>
+                    </div>
+                    <div id="d-connected-list" class="space-y-6"></div>
+                </div>
+
+                <div class="col-span-7 space-y-10">
+                    <div class="flex items-center justify-between px-2">
+                        <h3 class="text-xs font-black text-[#7081b3] uppercase tracking-widest">Available Integrations</h3>
+                    </div>
+                    <div id="d-broker-grid" class="grid grid-cols-2 gap-8"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="mobile-view">
+        <header class="p-6 flex justify-between items-center border-b border-[#1e293b] sticky top-0 z-[1000] bg-[#0f172a]/90 backdrop-blur-xl">
+            <h2 class="text-sm font-black tracking-widest uppercase text-white">BROKER CONNECTIONS</h2>
+            <button onclick="window.location.href='profile.html'" class="w-9 h-9 border border-[#00e5ff] flex items-center justify-center font-black text-[#00e5ff] text-[10px]" id="m-user-init">U</button>
+        </header>
+
+        <main class="p-4 space-y-8 pb-24">
+            <section class="space-y-6">
+                <h3 class="text-[10px] font-black text-[#7081b3] uppercase tracking-widest ml-2 border-b border-[#1e293b] pb-2">Linked Accounts</h3>
+                <div id="m-connected-list" class="space-y-4"></div>
+            </section>
+            <section class="space-y-6">
+                <h3 class="text-[10px] font-black text-[#7081b3] uppercase tracking-widest ml-2 border-b border-[#1e293b] pb-2">Integrate New</h3>
+                <div id="m-broker-grid" class="grid grid-cols-1 gap-4"></div>
+            </section>
+        </main>
+
+        <nav class="mobile-nav" id="mobile-bottom-nav"></nav>
+    </div>
+
+    <!-- Broker Modal -->
+    <div id="broker-modal" class="hidden fixed inset-0 bg-black/95 backdrop-blur-xl z-[2000] flex items-center justify-center p-6">
+        <div id="modal-content" class="card-v3 neon-glow-blue max-w-lg w-full"></div>
+    </div>
+
+    <script type="module">
+        import { initNavigation } from "./js/nav_manager.js";
+        import { checkAuth } from "./js/auth.js";
+        import "./js/brokers.js";
+
+        initNavigation();
+        const user = checkAuth();
+        if(user) document.getElementById('d-user-init').innerText = document.getElementById('m-user-init').innerText = user.username[0].toUpperCase();
+    </script>
+</body>
+</html>

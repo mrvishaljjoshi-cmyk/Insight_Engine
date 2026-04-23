@@ -1,0 +1,97 @@
+<!-- Author: Vishal Joshi (vishaljoshi9694@gmail.com) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insight Engine 3.0 | Professional Trading Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/mobile_unified.css">
+    <style>
+        .hero-title { background: linear-gradient(90deg, #00e5ff, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    </style>
+    <link rel="manifest" href="manifest.json">
+</head>
+<body class="text-white min-h-screen bg-[#0f172a]">
+    <nav class="p-8 flex justify-between items-center max-w-7xl mx-auto border-b border-[#1e293b]">
+        <div class="flex items-center gap-4">
+            <div class="w-10 h-10 bg-slate-900 border border-[#00e5ff] rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(0,229,255,0.3)]">
+                <i class="fas fa-atom text-[#00e5ff] text-lg animate-pulse"></i>
+            </div>
+            <h1 class="text-xl font-black tracking-tighter uppercase text-white">INSIGHT_V3</h1>
+        </div>
+        <div id="nav-links" class="flex gap-6 items-center">
+            <a href="login.html" class="text-slate-400 hover:text-[#00e5ff] font-black uppercase tracking-widest text-[10px] transition-all">Secure Login</a>
+            <a href="register.html" class="btn-3d-blue py-3 px-6 text-[10px]">Create Account</a>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-6 py-24">
+        <section class="text-center mb-32 relative">
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#00e5ff] opacity-10 blur-[100px] rounded-full pointer-events-none"></div>
+            <p class="text-[10px] font-black text-[#00e5ff] tracking-[0.4em] uppercase mb-6">Next-Generation Demat Platform</p>
+            <h2 class="text-6xl md:text-8xl font-black mb-8 leading-tight uppercase tracking-tighter">Trade Smarter with <br><span class="hero-title">AI Precision.</span></h2>
+            <p class="text-lg text-slate-400 max-w-2xl mx-auto mb-14 font-medium leading-relaxed">Professional-grade algorithmic execution and real-time AI technical insights for the modern Indian trader. Link multiple demat accounts seamlessly.</p>
+            <div class="flex justify-center gap-6">
+                <button onclick="location.href='register.html'" class="btn-3d-blue py-5 px-10 text-[12px]">Start Trading Now</button>
+                <button onclick="location.href='features.html'" class="px-10 py-5 rounded-xl border border-[#1e293b] font-black text-[12px] uppercase tracking-widest text-slate-400 hover:text-white hover:border-[#00e5ff] hover:bg-[rgba(0,229,255,0.05)] transition-all shadow-[0_0_15px_rgba(0,0,0,0.4)]">View Features</button>
+            </div>
+        </section>
+
+        <section id="features" class="grid grid-cols-1 md:grid-cols-3 gap-10 mb-32">
+            <div class="card-v3 hover:neon-glow-blue border-[#1e293b] bg-[#1e293b]/50">
+                <i class="fas fa-bolt text-3xl text-[#00e5ff] mb-6"></i>
+                <h3 class="text-xl font-black mb-3 uppercase tracking-tighter text-white">Instant Order Placement</h3>
+                <p class="text-slate-400 text-xs leading-relaxed font-medium">Execute trades with millisecond latency using our optimized backend engine. Direct connectivity to multiple Indian brokers.</p>
+            </div>
+            <div class="card-v3 hover:neon-glow-blue border-[#1e293b] bg-[#1e293b]/50">
+                <i class="fas fa-layer-group text-3xl text-[#00e5ff] mb-6"></i>
+                <h3 class="text-xl font-black mb-3 uppercase tracking-tighter text-white">Link Multiple Demat Accounts</h3>
+                <p class="text-slate-400 text-xs leading-relaxed font-medium">Connect and manage Zerodha, Angel One, Dhan, and Upstox from a single unified dashboard.</p>
+            </div>
+            <div class="card-v3 hover:neon-glow-blue border-[#1e293b] bg-[#1e293b]/50">
+                <i class="fas fa-brain text-3xl text-[#00e5ff] mb-6"></i>
+                <h3 class="text-xl font-black mb-3 uppercase tracking-tighter text-white">AI Trading Insights</h3>
+                <p class="text-slate-400 text-xs leading-relaxed font-medium">Get live technical narratives, target prices, and stop-loss levels powered by local Neural LLMs.</p>
+            </div>
+        </section>
+
+        <section id="about" class="card-v3 p-16 neon-glow-blue bg-[#0e1428]">
+            <div class="max-w-4xl mx-auto text-center">
+                <p class="text-[#00e5ff] font-black uppercase tracking-widest text-[10px] mb-6">Our Vision</p>
+                <h2 class="text-5xl font-black mb-10 tracking-tighter uppercase text-white">Intelligence Redefined.</h2>
+                <p class="text-lg text-slate-400 leading-relaxed mb-12 font-medium">
+                    Insight Engine was built to bridge the gap between retail trading and institutional algorithmic capabilities. 
+                    We provide the raw power, the native speed, and the intelligence you need to trade in the Indian stock market without limits.
+                </p>
+                <div class="flex justify-center gap-16">
+                    <div>
+                        <p class="text-4xl font-black text-[#00e5ff] tabular-nums">5+</p>
+                        <p class="text-slate-500 text-[10px] font-black uppercase tracking-widest mt-2">Brokers Supported</p>
+                    </div>
+                    <div>
+                        <p class="text-4xl font-black text-[#00ff9d] tabular-nums"><100ms</p>
+                        <p class="text-slate-500 text-[10px] font-black uppercase tracking-widest mt-2">Execution Latency</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="p-10 border-t border-[#1e293b] text-center">
+        <p class="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">&copy; 2026 VJ Projects. Built for High-Frequency Precision.</p>
+    </footer>
+
+    <script type="module">
+        import { checkAuth } from './js/auth.js';
+        const user = checkAuth(false);
+        if (user) {
+            document.getElementById('nav-links').innerHTML = `
+                <span class="text-slate-400 font-black text-[10px] uppercase tracking-widest">HI, ${user.username}</span>
+                <button onclick="location.href='dashboard.html'" class="btn-3d-blue py-3 px-6 text-[10px]">Access Terminal</button>
+            `;
+        }
+    </script>
+</body>
+</html>

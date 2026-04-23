@@ -1,0 +1,146 @@
+/* 3D Neon-Pulse Terminal for Insight Engine 3.0 */
+/* Author: Vishal Joshi (vishaljoshi9694@gmail.com) */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@400;800&family=Outfit:wght@400;900&display=swap');
+
+:root {
+    --bg-main: #0f172a; /* Professional Blue-Grey */
+    --bg-card: #1e293b;
+    --bg-panel: #334155;
+    
+    --border-dim: rgba(255, 255, 255, 0.1);
+    
+    --neon-blue: #00e5ff;
+    --neon-green: #00ff9d;
+    --neon-red: #ff3131;
+    
+    --primary-blue-3d: #2563eb;
+    
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-dim: #64748b;
+    
+    --font-mono: 'JetBrains Mono', monospace;
+    --font-ui: 'Inter', sans-serif;
+    --font-heading: 'Outfit', sans-serif;
+}
+
+body { 
+    font-family: var(--font-ui); 
+    background-color: var(--bg-main); 
+    color: var(--text-primary); 
+    margin: 0; padding: 0; 
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+.tabular-nums { font-variant-numeric: tabular-nums; font-family: var(--font-mono); }
+
+/* 3D & Neon Utilities */
+.neon-glow-blue { border: 1px solid var(--neon-blue); box-shadow: 0 0 20px rgba(0, 229, 255, 0.2); }
+.neon-glow-green { border: 1px solid var(--neon-green); box-shadow: 0 0 20px rgba(0, 255, 157, 0.2); }
+.neon-glow-red { border: 1px solid var(--neon-red); box-shadow: 0 0 20px rgba(255, 49, 49, 0.2); }
+
+.btn-3d-blue {
+    background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+    border: 1px solid #1d4ed8;
+    border-bottom: 4px solid #1e40af;
+    color: white;
+    font-weight: 900;
+    padding: 14px 28px;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.1s;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+.btn-3d-blue:hover { transform: translateY(-1px); border-bottom-width: 5px; filter: brightness(1.1); }
+.btn-3d-blue:active { transform: translateY(2px); border-bottom-width: 1px; }
+
+/* Sidebar Auto-Expand */
+.sidebar { 
+    width: 72px; 
+    border-right: 1px solid var(--border-dim); 
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+    background: var(--bg-main); 
+    z-index: 100; 
+    overflow: hidden;
+    position: relative;
+}
+.sidebar:hover { width: 260px; box-shadow: 20px 0 50px rgba(0,0,0,0.4); }
+
+.nav-text { 
+    opacity: 0; 
+    margin-left: 16px; 
+    font-weight: 800; 
+    white-space: nowrap; 
+    transition: opacity 0.2s, transform 0.2s;
+    transform: translateX(-10px);
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    font-size: 11px;
+}
+.sidebar:hover .nav-text { opacity: 1; transform: translateX(0); }
+
+.sidebar i { 
+    font-size: 1.2rem; 
+    width: 72px; 
+    min-width: 72px; 
+    text-align: center; 
+    color: var(--text-dim);
+}
+
+.sidebar button:hover i, .sidebar button.active i { color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); }
+
+/* Mobile Navigation */
+.mobile-nav { 
+    position: fixed; 
+    bottom: 0; left: 0; right: 0; 
+    height: 75px; 
+    background: rgba(15, 23, 42, 0.95); 
+    backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border-dim); 
+    z-index: 1000; 
+    display: flex; 
+    justify-content: space-around; 
+    align-items: center; 
+}
+
+/* Common Components */
+.card-v3 { 
+    background: var(--bg-card); 
+    border: 1px solid var(--border-dim); 
+    border-radius: 2rem; 
+    padding: 2.5rem;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+}
+
+input, select { 
+    background: #0f172a !important; 
+    border: 1px solid var(--border-dim) !important; 
+    border-radius: 12px !important; 
+    color: white !important; 
+    padding: 14px 18px !important; 
+    font-family: var(--font-mono) !important;
+    font-size: 14px !important;
+    outline: none !important; 
+}
+input:focus { border-color: var(--neon-blue) !important; box-shadow: 0 0 15px rgba(0, 229, 255, 0.1) !important; }
+
+/* Indian Terms Custom Utilities */
+.indian-label { font-size: 10px; font-weight: 900; color: var(--text-dim); letter-spacing: 0.1em; text-transform: uppercase; }
+
+/* Layout Logic */
+body.force-mobile .desktop-view { display: none !important; }
+body.force-mobile .mobile-view { display: flex !important; flex-direction: column; min-height: 100vh; padding-bottom: 80px; }
+body.force-desktop .mobile-view { display: none !important; }
+body.force-desktop .desktop-view { display: flex !important; height: 100vh; overflow: hidden; }
+
+.force-auto .desktop-view { display: flex; height: 100vh; overflow: hidden; }
+.force-auto .mobile-view { display: none; }
+@media (max-width: 768px) {
+    .force-auto .desktop-view { display: none !important; }
+    .force-auto .mobile-view { display: flex !important; flex-direction: column; min-height: 100vh; padding-bottom: 80px; }
+}

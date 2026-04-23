@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>My Demat Holdings | INSIGHT.V3</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/mobile_unified.css">
+    <style>
+        .terminal-header { border-bottom: 1px solid var(--border-dim); background: var(--bg-panel); }
+        .stat-value-v3 { font-size: 24px; font-weight: 800; font-family: var(--font-mono); color: var(--text-primary); letter-spacing: -0.02em; }
+        
+        .broker-tag { padding: 6px 14px; font-size: 9px; font-weight: 900; border: 1px solid var(--border-dim); color: var(--text-secondary); cursor: pointer; transition: all 0.2s; background: rgba(0,0,0,0.3); }
+        .broker-tag.active { border-color: var(--border-neon); color: var(--border-neon); background: rgba(0, 229, 255, 0.05); box-shadow: var(--neon-glow); }
+        
+        .holdings-table th { padding: 18px 24px; font-size: 9px; font-weight: 900; color: var(--text-dim); border-bottom: 1px solid var(--border-dim); text-align: left; letter-spacing: 0.2em; text-transform: uppercase; }
+        .holdings-table td { padding: 18px 24px; font-size: 13px; border-bottom: 1px solid var(--border-dim); transition: all 0.2s; }
+        .holdings-table tr:hover td { background: var(--bg-active); border-bottom-color: var(--border-neon); }
+        
+        .ai-guide-item { padding: 16px; border-bottom: 1px solid #1a233b; transition: all 0.3s; }
+        .ai-guide-item:last-child { border-bottom: none; }
+        .ai-guide-item:hover { background: rgba(0, 229, 255, 0.02); }
+    </style>
+</head>
+<body class="force-auto">
+    <!-- Author: Vishal Joshi (vishaljoshi9694@gmail.com) -->
+    <div class="mesh-bg"></div>
+
+    <div class="desktop-view">
+        <aside class="sidebar flex flex-col" id="desktop-sidebar"></aside>
+
+        <main class="main-container custom-scrollbar">
+            <header class="terminal-header p-10 flex justify-between items-center sticky top-0 z-50 backdrop-blur-xl">
+                <div class="flex items-center gap-14">
+                    <div>
+                        <h2 class="text-2xl font-black text-white tracking-tighter uppercase">Portfolio Summary</h2>
+                        <p class="text-[8px] font-black text-[#3a4a75] tracking-[0.5em] uppercase mt-1">Live Updates Active</p>
+                    </div>
+                    <div id="d-broker-selector" class="flex gap-2"></div>
+                </div>
+                <div class="flex items-center gap-12">
+                    <div class="flex gap-14">
+                        <div><p class="stat-label-v3">Funds in Account</p><h3 id="d-total-cash" class="stat-value-v3 text-[#00e5ff]">₹0.00</h3></div>
+                        <div><p class="stat-label-v3">Net Valuation</p><h3 id="d-total-current" class="stat-value-v3 text-white">₹0.00</h3></div>
+                        <div><p class="stat-label-v3">Current Profit & Loss</p><h3 id="d-total-pnl" class="stat-value-v3">₹0.00</h3></div>
+                    </div>
+                    <button onclick="window.sync()" class="w-14 h-14 border border-[#1a233b] hover:border-[#00e5ff] hover:text-[#00e5ff] flex items-center justify-center transition-all bg-black shadow-lg"><i class="fas fa-sync-alt text-xs" id="d-sync-icon"></i></button>
+                </div>
+            </header>
+
+            <div class="grid grid-cols-12 min-h-[calc(100vh-144px)]">
+                <div class="col-span-8 p-10">
+                    <div class="card-v3 neon-glow-blue bg-card">
+                        <div class="p-6 bg-[#0e1428] border-b border-[#1a233b] flex justify-between items-center">
+                            <span class="text-[10px] font-black text-white tracking-[0.3em] uppercase">Your Demat Holdings</span>
+                            <div class="flex items-center gap-4">
+                                <span class="text-[8px] font-bold text-[#3a4a75] tracking-widest"><i class="fas fa-circle text-[6px] text-[#00ff9d] mr-2"></i>REALTIME SYNC</span>
+                            </div>
+                        </div>
+                        <table class="w-full holdings-table">
+                            <thead>
+                                <tr>
+                                    <th>Stock Name</th><th>Quantity</th><th>Buy Price</th><th>Current LTP</th><th>Profit / Loss</th><th>% Change</th>
+                                </tr>
+                            </thead>
+                            <tbody id="d-holdings-body" class="mono"></tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="col-span-4 border-l border-[#1a233b] p-10 flex flex-col gap-10">
+                    <div class="advisor-card border-[#1a233b] flex-grow flex flex-col min-h-0">
+                        <h4 class="text-[11px] font-black text-[#00e5ff] mb-6 flex items-center gap-3">
+                            <i class="fas fa-robot animate-pulse"></i> AI MARKET GUIDE
+                        </h4>
+                        <div id="ai-narrative-container" class="flex-grow overflow-y-auto custom-scrollbar pr-4 space-y-4"></div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <p class="stat-label-v3">System Updates</p>
+                        <div class="space-y-2">
+                            <div class="p-3 bg-black/30 border border-[#1a233b] font-mono text-[9px] text-[#3a4a75]">> All nodes connected. Cache loaded.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MOBILE -->
+    <div class="mobile-view">
+        <header class="p-6 flex justify-between items-center border-b border-[#1a233b] sticky top-0 z-[1000] bg-[#060b19]/90 backdrop-blur-xl">
+            <h2 class="text-sm font-black tracking-[0.2em] text-white uppercase">PORTFOLIO</h2>
+            <div class="flex gap-4">
+                <button onclick="window.sync()" class="text-[#00e5ff]"><i class="fas fa-sync-alt text-xs" id="m-sync-icon"></i></button>
+                <div class="w-8 h-8 border border-[#00e5ff] flex items-center justify-center font-black text-[10px] text-[#00e5ff]" id="m-user-init">U</div>
+            </div>
+        </header>
+
+        <main class="p-4 space-y-6 pb-24">
+            <div id="m-broker-selector" class="flex gap-2 overflow-x-auto no-scrollbar py-1"></div>
+
+            <div class="grid grid-cols-2 gap-px bg-[#1a233b] border border-[#1a233b]">
+                <div class="p-6 bg-card">
+                    <p class="stat-label-v3">Funds</p>
+                    <h3 id="m-total-cash" class="text-lg font-black text-[#00e5ff] tabular-nums">₹0.00</h3>
+                </div>
+                <div class="p-6 bg-card">
+                    <p class="stat-label-v3">P&L</p>
+                    <h3 id="m-total-pnl" class="text-lg font-black tabular-nums">₹0.00</h3>
+                </div>
+            </div>
+
+            <div class="advisor-card border-[#1a233b]">
+                <h4 class="text-[10px] font-black text-[#00e5ff] mb-4">AI GUIDE</h4>
+                <div id="m-ai-narrative-container" class="space-y-4 max-h-[300px] overflow-y-auto pr-2"></div>
+            </div>
+
+            <div id="m-holdings-list" class="space-y-3"></div>
+        </main>
+
+        <nav class="mobile-nav" id="mobile-bottom-nav"></nav>
+    </div>
+
+    <script type="module">
+        /** Author: Vishal Joshi (vishaljoshi9694@gmail.com) **/
+        import { initNavigation } from "./js/nav_manager.js";
+        import { checkAuth } from "./js/auth.js";
+        import { getHoldings, getAllBalances, getAISummary } from "./js/api.js";
+        import { initMarketWS } from "./js/websocket.js";
+
+        initNavigation();
+        const user = checkAuth();
+        if(user && document.getElementById('m-user-init')) document.getElementById('m-user-init').innerText = user.username[0].toUpperCase();
+
+        let masterData = null;
+        let selectedBroker = 'all';
+        const fmt = (v) => '₹' + parseFloat(v || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+
+        // --- Cache-First Strategy ---
+        async function loadCache() {
+            const cached = localStorage.getItem('last_master_data');
+            const cachedAI = localStorage.getItem('last_ai_data');
+            if(cached) {
+                masterData = JSON.parse(cached);
+                renderFilters();
+                refreshUI();
+            }
+            if(cachedAI) renderAI(JSON.parse(cachedAI));
+        }
+
+        window.sync = async () => {
+            const icons = [document.getElementById('d-sync-icon'), document.getElementById('m-sync-icon')];
+            icons.forEach(i => i?.classList.add('fa-spin'));
+            try {
+                const [hData, bData] = await Promise.all([getHoldings(), getAllBalances()]);
+                masterData = { 
+                    holdings: hData?.holdings || [], 
+                    balances: bData?.brokers || {}, 
+                    totalBalance: parseFloat(bData?.total_balance || 0)
+                };
+                localStorage.setItem('last_master_data', JSON.stringify(masterData));
+                renderFilters();
+                refreshUI();
+                updateAI();
+            } catch (e) { console.error(e); }
+            finally { icons.forEach(i => i?.classList.remove('fa-spin')); }
+        };
+
+        async function updateAI() {
+            try {
+                const aiData = await getAISummary();
+                localStorage.setItem('last_ai_data', JSON.stringify(aiData));
+                renderAI(aiData);
+            } catch (e) {}
+        }
+
+        function renderAI(aiData) {
+            const analyses = aiData?.analyses || [];
+            const containerD = document.getElementById('ai-narrative-container');
+            const containerM = document.getElementById('m-ai-narrative-container');
+            if(!containerD || !containerM) return;
+
+            const html = analyses.map(a => {
+                const color = a.recommendation === 'BUY' ? 'text-[#00ff9d]' : a.recommendation === 'SELL' ? 'text-[#ff0055]' : 'text-slate-400';
+                return `
+                    <div class="ai-guide-item">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="font-black text-white text-xs uppercase">${a.symbol}</span>
+                            <span class="text-[8px] font-black ${color}">${a.recommendation}</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 font-medium leading-relaxed italic">"${a.market_narrative || a.analysis}"</p>
+                    </div>`;
+            }).join('');
+            containerD.innerHTML = containerM.innerHTML = html || '<p class="text-xs text-slate-600">Awaiting technical drift...</p>';
+        }
+
+        function renderFilters() {
+            const uniqueBrokers = ['all', ...new Set(masterData.holdings.map(item => item.broker_name))];
+            ['d-broker-selector', 'm-broker-selector'].forEach(id => {
+                const el = document.getElementById(id);
+                if(!el) return;
+                el.innerHTML = uniqueBrokers.map(br => `
+                    <button onclick="window.filterBy('${br}')" class="broker-tag ${selectedBroker === br ? 'active' : ''}">
+                        ${br.toUpperCase()}
+                    </button>
+                `).join('');
+            });
+        }
+
+        window.filterBy = (name) => { selectedBroker = name; refreshUI(); renderFilters(); };
+
+        function refreshUI() {
+            if (!masterData) return;
+            const filtered = selectedBroker === 'all' ? masterData.holdings : masterData.holdings.filter(h => h.broker_name === selectedBroker);
+            let totalPnL = 0; let totalInvested = 0; let totalCurrent = 0;
+            filtered.forEach(h => {
+                totalPnL += parseFloat(h.profit_loss || 0);
+                totalInvested += (parseFloat(h.quantity) * parseFloat(h.avg_price));
+                totalCurrent += (parseFloat(h.quantity) * parseFloat(h.current_price));
+            });
+            const cash = selectedBroker === 'all' ? masterData.totalBalance : parseFloat(masterData.balances[selectedBroker]?.availablecash || 0);
+            const pnlColor = totalPnL >= 0 ? 'text-[#00ff9d]' : 'text-[#ff0055]';
+            ['d', 'm'].forEach(p => {
+                const cEl = document.getElementById(`${p}-total-cash`); if(cEl) cEl.innerText = fmt(cash);
+                const curEl = document.getElementById(`${p}-total-current`); if(curEl) curEl.innerText = fmt(totalCurrent);
+                const pnlEl = document.getElementById(`${p}-total-pnl`); 
+                if(pnlEl) { pnlEl.innerText = (totalPnL >= 0 ? '+' : '') + fmt(totalPnL); pnlEl.className = `${p==='d'?'stat-value-v3':'text-lg font-black'} tabular-nums ${pnlColor}`; }
+            });
+            document.getElementById('d-holdings-body').innerHTML = filtered.map(h => {
+                const pnl = parseFloat(h.profit_loss || 0);
+                const pct = (pnl / (h.quantity * h.avg_price) * 100).toFixed(2);
+                const color = pnl >= 0 ? 'text-[#00ff9d]' : 'text-[#ff0055]';
+                return `<tr><td class="font-black text-white">${h.symbol} <span class="text-[8px] text-[#3a4a75] ml-2 font-black">${h.broker_name.toUpperCase()}</span></td><td class="text-[#7081b3] font-mono font-bold">${h.quantity}</td><td class="text-[#3a4a75] font-mono font-bold">₹${h.avg_price.toFixed(2)}</td><td class="text-white font-black tabular-nums">₹${h.current_price.toFixed(2)}</td><td class="${color} font-black tabular-nums">${pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}</td><td class="${color} font-black tabular-nums">${pnl >= 0 ? '+' : ''}${pct}%</td></tr>`;
+            }).join('');
+            document.getElementById('m-holdings-list').innerHTML = filtered.map(h => `
+                <div class="p-6 bg-card border border-[#1a233b] flex justify-between items-center shadow-xl">
+                    <div><p class="font-black text-sm text-white uppercase tracking-tighter">${h.symbol}</p><p class="text-[8px] text-[#3a4a75] uppercase font-black mt-1">${h.quantity} UNITS · ${h.broker_name.toUpperCase()}</p></div>
+                    <div class="text-right"><p class="font-black text-sm tabular-nums ${parseFloat(h.profit_loss) >= 0 ? 'text-[#00ff9d]' : 'text-[#ff0055]'}">${parseFloat(h.profit_loss) >= 0 ? '+' : ''}${parseFloat(h.profit_loss || 0).toFixed(1)}</p><p class="text-[8px] text-[#3a4a75] tabular-nums font-black">LTP: ${h.current_price.toFixed(1)}</p></div>
+                </div>`).join('');
+        }
+
+        loadCache();
+        sync();
+        
+        // --- High-Frequency Pulse-Sync (1s precision) ---
+        const IST_OFFSET = 5.5 * 60 * 60 * 1000;
+        function isMarketOpen() {
+            const now = new Date(new Date().getTime() + IST_OFFSET);
+            const day = now.getUTCDay();
+            const time = now.getUTCHours() * 100 + now.getUTCMinutes();
+            return (day >= 1 && day <= 5) && (time >= 915 && time <= 1530);
+        }
+
+        // 1s UI Refresh (Local calculation)
+        setInterval(() => {
+            if (!document.hidden && isMarketOpen()) refreshUI(); 
+        }, 1000);
+
+        // 60s Server Sync (Fetch fresh data)
+        setInterval(() => {
+            if (!document.hidden) sync();
+        }, 60000);
+
+        initMarketWS((tick) => {
+            if (!masterData) return;
+            masterData.holdings.forEach(h => {
+                if (h.symbol.includes(tick.symbol) || tick.symbol === 'NIFTY 50') {
+                    const drift = (tick.change / 22500) * h.current_price;
+                    h.current_price += drift;
+                    h.profit_loss = (h.current_price - h.avg_price) * h.quantity;
+                }
+            });
+            refreshUI();
+        });
+    </script>
+</body>
+</html>

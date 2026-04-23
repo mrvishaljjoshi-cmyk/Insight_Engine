@@ -1,0 +1,73 @@
+<!-- Author: Vishal Joshi (vishaljoshi9694@gmail.com) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SECURITY_CONSOLE | INSIGHT.V3</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/mobile_unified.css">
+    <style>
+        .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+        .risk-node { background: rgba(14, 20, 40, 0.6); border: 1px solid var(--border-dim); padding: 30px; cursor: pointer; transition: all 0.3s; position: relative; }
+        .risk-node:hover { border-color: var(--primary-neon); }
+        .risk-node.active { border-color: var(--primary-neon); background: rgba(0, 229, 255, 0.03); box-shadow: var(--neon-glow); }
+        .risk-node.active::after { content: "ACTIVE_PROTOCOL"; position: absolute; top: 10px; right: 20px; font-size: 7px; font-weight: 900; color: var(--primary-neon); }
+    </style>
+</head>
+<body class="force-auto bg-[#060b19]">
+    <div class="desktop-view">
+        <aside class="sidebar flex flex-col" id="desktop-sidebar"></aside>
+        <main class="main-container flex flex-col overflow-y-auto p-12">
+            <header class="flex justify-between items-center mb-12">
+                <div><h2 class="text-2xl font-black text-white tracking-tighter uppercase">Security_Override_Console</h2><p class="text-[8px] font-black text-[#3a4a75] tracking-[0.4em] uppercase mt-1">Node: Master_Authority</p></div>
+                <div class="w-12 h-12 border border-[#00e5ff] flex items-center justify-center font-black text-[#00e5ff] text-xs shadow-[0_0_15px_rgba(0,229,255,0.2)]" id="d-user-init">U</div>
+            </header>
+            <div class="max-w-7xl mx-auto space-y-12 w-full">
+                <div class="profile-grid">
+                    <div class="neon-glow-blue bg-black/40 p-10 space-y-10">
+                        <h3 class="text-sm font-black text-white uppercase tracking-widest border-l-4 border-[#00e5ff] pl-4">Core_Identity_Node</h3>
+                        <div class="space-y-6">
+                            <div class="space-y-2"><label class="label-v3">COGNITIVE_ID</label><input type="text" id="d-username" disabled class="w-full opacity-30"></div>
+                            <div class="space-y-2"><label class="label-v3">UPLINK_COMM_ID</label><input type="email" id="d-email" class="w-full"></div>
+                        </div>
+                        <button onclick="window.saveProfile()" class="btn-neon w-full">SYNC_IDENTITY_NODE</button>
+                    </div>
+                    <div class="neon-glow-blue bg-black/40 p-10 space-y-10">
+                        <h3 class="text-sm font-black text-white uppercase tracking-widest border-l-4 border-[#ff0055] pl-4">Security_Hash_Regen</h3>
+                        <div class="space-y-6">
+                            <div class="space-y-2"><label class="label-v3">CURRENT_KEY</label><input type="password" id="d-curr-pass" class="w-full" placeholder="••••••••"></div>
+                            <div class="space-y-2"><label class="label-v3">NEW_KEY_REGEN</label><input type="password" id="d-new-pass" class="w-full" placeholder="••••••••"></div>
+                        </div>
+                        <button onclick="window.updatePassword()" class="w-full py-5 border border-[#ff0055] text-[#ff0055] font-black text-[11px] uppercase tracking-widest hover:bg-[#ff0055] hover:text-black transition-all">REGENERATE_KEYS</button>
+                    </div>
+                </div>
+                <div class="neon-glow-blue bg-black/40 p-10 space-y-10">
+                    <h3 class="text-sm font-black text-white uppercase tracking-widest border-l-4 border-yellow-500 pl-4">AI_Neural_Config</h3>
+                    <div class="grid grid-cols-3 gap-8">
+                        <div class="risk-node" onclick="window.setRisk('CONSERVATIVE')" id="risk-con"><h5 class="font-black text-[11px] mb-3 tracking-widest uppercase">Conservative</h5><p class="text-[11px] text-slate-500 italic">Prioritizes capital protection. 95% confidence threshold.</p></div>
+                        <div class="risk-node active" onclick="window.setRisk('BALANCED')" id="risk-bal"><h5 class="font-black text-[11px] mb-3 tracking-widest uppercase text-[#00e5ff]">Balanced_Mode</h5><p class="text-[11px] text-slate-400 italic">Standard neural drift. Optimized for growth extraction.</p></div>
+                        <div class="risk-node" onclick="window.setRisk('AGGRESSIVE')" id="risk-agg"><h5 class="font-black text-[11px] mb-3 tracking-widest uppercase">Aggressive</h5><p class="text-[11px] text-slate-500 italic">High-alpha targeting. Maximum neural momentum active.</p></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script type="module">
+        import { initNavigation } from './js/nav_manager.js'; import { checkAuth } from './js/auth.js'; import { getUserProfile } from './js/api.js';
+        initNavigation(); const user = checkAuth();
+        if(user) document.getElementById('d-user-init').innerText = user.username[0].toUpperCase();
+        window.setRisk = (r) => {
+            [con, bal, agg].forEach(k => document.getElementById('risk-'+k).classList.remove('active'));
+            const b = { 'conservative':con, 'balanced':bal, 'aggressive':agg }[r.toLowerCase()];
+            if(b) document.getElementById('risk-'+b).classList.add('active');
+            localStorage.setItem('ai_risk_profile', r);
+        };
+        async function load() {
+            try { const p = await getUserProfile(); if(p) { document.getElementById('d-username').value = p.username; document.getElementById('d-email').value = p.email || ''; } }
+            catch(e) {} window.setRisk(localStorage.getItem('ai_risk_profile') || 'BALANCED');
+        } load();
+    </script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+<!-- Author: Vishal Joshi (vishaljoshi9694@gmail.com) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BANKNIFTY | Insight</title>
+    <script>location.href='options.html?index=BANKNIFTY'</script>
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('SW Registered', reg))
+                    .catch(err => console.log('SW Failed', err));
+            });
+        }
+    </script>
+</body>
+
+</html>

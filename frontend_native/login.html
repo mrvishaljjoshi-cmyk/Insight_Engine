@@ -1,0 +1,68 @@
+<!-- Author: Vishal Joshi (vishaljoshi9694@gmail.com) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SECURE_LOGIN | INSIGHT.V3</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/mobile_unified.css">
+</head>
+<body class="min-h-screen flex items-center justify-center p-6">
+    <div id="login-container" class="card-v3 neon-glow-blue w-full max-w-[440px]">
+        <div class="text-center mb-12">
+            <div class="w-20 h-20 bg-slate-900 border border-[#00e5ff] rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl">
+                <i class="fas fa-fingerprint text-[#00e5ff] text-3xl animate-pulse"></i>
+            </div>
+            <h1 class="text-3xl font-black text-white tracking-tighter uppercase">Insight Login</h1>
+            <p class="text-[9px] font-black text-slate-500 tracking-[0.3em] uppercase mt-2">Access Your Demat Node</p>
+        </div>
+
+        <div class="flex border-b border-slate-800 mb-10">
+            <button onclick="setMode('Trader')" id="tab-trader" class="flex-1 py-5 text-[10px] font-black uppercase tracking-widest text-[#00e5ff] border-b-2 border-[#00e5ff]">Trader Account</button>
+            <button onclick="setMode('Admin')" id="tab-admin" class="flex-1 py-5 text-[10px] font-black uppercase tracking-widest text-slate-500">Master Admin</button>
+        </div>
+
+        <form id="login-form" class="space-y-8">
+            <div class="space-y-2">
+                <label class="indian-label">Username or Email ID</label>
+                <input type="text" id="username" required class="w-full" placeholder="Enter your details">
+            </div>
+            <div class="space-y-2">
+                <label class="indian-label">Secure Password</label>
+                <input type="password" id="password" required class="w-full" placeholder="••••••••">
+            </div>
+            <button type="submit" id="login-btn" class="btn-3d-blue w-full py-6 mt-4">Sign In to Terminal</button>
+        </form>
+
+        <div class="mt-12 text-center border-t border-slate-800 pt-8">
+            <p class="text-slate-500 text-[10px] font-black uppercase tracking-widest">New to Insight Engine?</p>
+            <button onclick="location.href='register.html'" class="mt-4 text-[#00e5ff] hover:text-white text-[11px] font-black uppercase tracking-widest transition-all">Create New Trading Node</button>
+        </div>
+    </div>
+    <script type="module">
+        import { saveAuth } from './js/auth.js';
+        let role = 'Trader';
+        window.setMode = (m) => {
+            role = m; const cont = document.getElementById('login-container');
+            cont.className = 'card-v3 w-full max-w-[440px] ' + (m === 'Trader' ? 'neon-glow-blue' : 'neon-glow-red');
+            document.getElementById('tab-trader').className = 'flex-1 py-5 text-[10px] font-black uppercase tracking-widest ' + (m === 'Trader' ? 'text-[#00e5ff] border-b-2 border-[#00e5ff]' : 'text-slate-500');
+            document.getElementById('tab-admin').className = 'flex-1 py-5 text-[10px] font-black uppercase tracking-widest ' + (m === 'Admin' ? 'text-red-500 border-b-2 border-red-500 shadow-[0_5px_15px_rgba(255,0,0,0.2)]' : 'text-slate-500');
+            document.getElementById('login-btn').innerText = m === 'Trader' ? 'Sign In to Terminal' : 'Authorize Master Node';
+        };
+        document.getElementById('login-form').onsubmit = async (e) => {
+            e.preventDefault(); const btn = document.getElementById('login-btn'); btn.innerText = 'Validating...';
+            try {
+                const res = await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username_or_email: document.getElementById('username').value, password: document.getElementById('password').value }) });
+                const d = await res.json();
+                if (res.ok) {
+                    if (d.role !== role) { alert('Permission Denied'); btn.innerText = 'Sign In'; return; }
+                    saveAuth(d.token, d.role, d.username, d.user_id);
+                    window.location.href = (d.role === 'Admin') ? 'admin.html' : 'dashboard.html';
+                } else alert(d.detail);
+            } catch (err) { alert('Server Offline'); } finally { btn.innerText = 'Sign In'; }
+        };
+    </script>
+</body>
+</html>

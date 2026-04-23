@@ -30,10 +30,11 @@ from fastapi.responses import JSONResponse
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from app.core.limiter import limiter
-from app.api import auth, admin, brokers, ws
+from app.api import auth, admin, brokers, ws, holdings, ai, trades, market, admin_dashboard, signals
 from app.core.config import settings
 from app.core.database import engine, Base, get_db
 from app.core.security import get_current_user
+from app.models.user import User
 from sqlalchemy.orm import Session
 from datetime import datetime
 
@@ -65,10 +66,24 @@ app.add_middleware(
     max_age=3600,
 )
 
+from app.core.worker import signal_worker_loop
+import asyncio
+
+@app.on_event("startup")
+async def startup_event():
+    """Execute startup protocols: Initialize workers and neural links."""
+    asyncio.create_task(signal_worker_loop())
+
 # Include routers
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(admin.router, prefix="/admin", tags=["admin"])
+app.include_router(admin_dashboard.router, prefix="/admin-dashboard", tags=["admin-dashboard"])
 app.include_router(brokers.router, prefix="/brokers", tags=["brokers"])
+app.include_router(holdings.router, prefix="/holdings", tags=["holdings"])
+app.include_router(ai.router, prefix="/ai", tags=["ai"])
+app.include_router(trades.router, prefix="/trades", tags=["trades"])
+app.include_router(market.router, prefix="/market", tags=["market"])
+app.include_router(signals.router, prefix="/signals", tags=["signals"])
 app.include_router(ws.router, prefix="/ws", tags=["websockets"])
 
 
@@ -86,72 +101,55 @@ from sqlalchemy import text, inspect
 
 @app.get("/health")
 def health_check(db: Session = Depends(get_db)):
-    """Enhanced health check endpoint for monitoring all components"""
-    health = {
-        "status": "healthy",
-        "service": "insight-api",
-        "timestamp": datetime.utcnow().isoformat(),
-        "version": "production",
-        "components": {
-            "database": {"status": "unknown", "details": {}},
-            "redis": {"status": "unknown", "details": {}},
-            "connection_pool": {"status": "unknown", "details": {}}
-        }
+    """Comprehensive health check for monitoring systems"""
+    health = readiness_check(db)
+    return {
+        "status": health["status"],
+        "service": "Insight API",
+        "timestamp": health["timestamp"],
+        "components": health["components"]
     }
 
-    # Check Database Connection
+
+@app.get("/health/liveness")
+def liveness_check():
+    """Fast liveness probe for basic availability"""
+    return {"status": "alive", "timestamp": datetime.utcnow().isoformat()}
+
+@app.get("/health/readiness")
+def readiness_check(db: Session = Depends(get_db)):
+    """Deep readiness probe for component health"""
+    health = {
+        "status": "healthy",
+        "timestamp": datetime.utcnow().isoformat(),
+        "components": {
+            "database": "unknown",
+            "redis": "unknown"
+        }
+    }
+    
     try:
         db.execute(text("SELECT 1"))
-        health["components"]["database"]["status"] = "connected"
-
-        # Check tables exist
-        inspector = inspect(engine)
-        tables = inspector.get_table_names()
-        health["components"]["database"]["details"]["tables"] = tables
-
-        # Check for required tables
-        required_tables = ['users', 'broker_credentials', 'market_data', 'watchlists', 'trade_journal']
-        missing = [t for t in required_tables if t not in tables]
-        if missing:
-            health["components"]["database"]["details"]["missing_tables"] = missing
-            health["status"] = "degraded"
+        health["components"]["database"] = "connected"
     except Exception as e:
         health["status"] = "unhealthy"
-        health["components"]["database"]["status"] = f"error: {str(e)}"
+        health["components"]["database"] = f"error: {str(e)}"
 
-    # Check Redis
     try:
         if redis_client.ping():
-            health["components"]["redis"]["status"] = "connected"
-            info = redis_client.info()
-            health["components"]["redis"]["details"]["version"] = info.get("redis_version", "unknown")
+            health["components"]["redis"] = "connected"
         else:
             health["status"] = "unhealthy"
-            health["components"]["redis"]["status"] = "disconnected"
+            health["components"]["redis"] = "disconnected"
     except Exception as e:
         health["status"] = "unhealthy"
-        health["components"]["redis"]["status"] = f"error: {str(e)}"
-
-    # Check Connection Pool (PostgreSQL only)
-    if "postgresql" in settings.DATABASE_URL.lower():
-        try:
-            pool = engine.pool
-            health["components"]["connection_pool"]["status"] = "active"
-            health["components"]["connection_pool"]["details"] = {
-                "pool_size": pool.size(),
-                "checked_in": pool.checkedin(),
-                "checked_out": pool.checkedout(),
-                "overflow": pool.overflow(),
-                "pool_class": pool.__class__.__name__
-            }
-        except Exception as e:
-            health["components"]["connection_pool"]["status"] = f"error: {str(e)}"
+        health["components"]["redis"] = f"error: {str(e)}"
 
     return health
 
 
 @app.get("/api/protected")
-def protected_route(current_user=Depends(get_current_user)):
+def protected_route(current_user: User = Depends(get_current_user)):
     return {"message": f"Hello {current_user.username}", "role": current_user.role}
 
 

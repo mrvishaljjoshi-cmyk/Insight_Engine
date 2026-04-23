@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Manage Brokers | Insight</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/mobile_unified.css">
+    <style>
+        .broker-card {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            border-radius: 2.5rem;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+        .broker-card:hover {
+            border-color: rgba(59, 130, 246, 0.3);
+            background: rgba(15, 23, 42, 0.8);
+            transform: scale(1.01);
+        }
+    </style>
+</head>
+<body class="force-auto">
+    <!-- DESKTOP -->
+    <div class="desktop-view">
+        <aside class="sidebar flex flex-col p-4" id="desktop-sidebar"></aside>
+
+        <main class="main-container custom-scrollbar">
+            <header class="p-8 flex justify-between items-center glass sticky top-0 z-50">
+                <div class="flex items-center gap-6">
+                    <h2 class="text-2xl font-black uppercase tracking-tighter">Exchange Uplinks</h2>
+                    <div class="px-4 py-2 bg-blue-500/10 rounded-xl border border-blue-500/20 text-blue-400 text-[9px] font-black uppercase tracking-widest">
+                        <i class="fas fa-shield-alt mr-2"></i> RSA-4096 Encryption Active
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center font-black shadow-lg" id="d-user-init">U</div>
+                </div>
+            </header>
+
+            <div class="p-8 grid grid-cols-12 gap-8">
+                <!-- Connected Column -->
+                <div class="col-span-5 space-y-8">
+                    <div class="flex items-center justify-between px-2">
+                        <h3 class="text-xs font-black text-slate-500 uppercase tracking-widest">Active Connections</h3>
+                        <span class="text-[9px] font-black text-green-500 uppercase"><i class="fas fa-circle text-[6px] mr-1 animate-pulse"></i> All Nodes Stable</span>
+                    </div>
+                    <div id="d-connected-list" class="space-y-6"></div>
+                </div>
+
+                <!-- Available Column -->
+                <div class="col-span-7 space-y-8">
+                    <div class="flex items-center justify-between px-2">
+                        <h3 class="text-xs font-black text-slate-500 uppercase tracking-widest">Available Integrations</h3>
+                    </div>
+                    <div id="d-broker-grid" class="grid grid-cols-2 gap-6"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MOBILE -->
+    <div class="mobile-view">
+        <header class="p-6 flex justify-between items-center glass sticky top-0 z-[1000]">
+            <h2 class="text-xl font-black tracking-tighter uppercase">UPLINKS</h2>
+            <button onclick="window.showProfile()" class="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center font-black shadow-lg" id="m-user-init">U</button>
+        </header>
+
+        <main class="p-4 space-y-8 pb-24">
+            <section class="space-y-4">
+                <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-2">Connected</h3>
+                <div id="m-connected-list" class="space-y-4"></div>
+            </section>
+            <section class="space-y-4">
+                <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-2">Integrate New</h3>
+                <div id="m-broker-grid" class="grid grid-cols-1 gap-4"></div>
+            </section>
+        </main>
+
+        <nav class="mobile-nav" id="mobile-bottom-nav"></nav>
+    </div>
+
+    <!-- Broker Modal -->
+    <div id="broker-modal" class="hidden fixed inset-0 bg-black/95 backdrop-blur-2xl z-[2000] flex items-center justify-center p-6">
+        <div id="modal-content" class="glass p-10 rounded-[3rem] max-w-lg w-full border-blue-500/20 shadow-2xl shadow-blue-500/10"></div>
+    </div>
+
+    <script type="module">
+        /**
+         * Broker Setup Logic - Insight Engine
+         * Author: Vishal Joshi (vishaljoshi9694@gmail.com)
+         */
+        import { initNavigation } from "./js/nav_manager.js";
+        import { checkAuth } from "./js/auth.js";
+        import "./js/brokers.js"; // This script handles the dynamic injection into connected-list and broker-grid
+
+        initNavigation();
+        const user = checkAuth();
+        document.getElementById('d-user-init').innerText = document.getElementById('m-user-init').innerText = user.username[0].toUpperCase();
+
+        // Note: brokers.js needs to be updated to target the new IDs if they changed.
+        // I will ensure brokers.js is compatible.
+    </script>
+</body>
+</html>

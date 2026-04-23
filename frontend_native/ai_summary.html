@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI_STRATEGY_NODES | INSIGHT.V3</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/mobile_unified.css">
+    <style>
+        .ai-list-node { background: var(--bg-card); border: 1px solid var(--border-dim); border-radius: 1.5rem; transition: all 0.3s; cursor: pointer; display: flex; align-items: center; padding: 20px 32px; gap: 32px; }
+        .ai-list-node:hover { border-color: var(--neon-blue); transform: translateX(8px); box-shadow: var(--neon-glow); }
+        .ai-list-node.neon-glow-green { border-color: var(--neon-green); box-shadow: 0 0 15px rgba(0, 255, 157, 0.1); }
+        .ai-list-node.neon-glow-red { border-color: var(--neon-red); box-shadow: 0 0 15px rgba(255, 49, 49, 0.1); }
+        
+        .signal-pill { padding: 4px 12px; border-radius: 1rem; font-size: 9px; font-weight: 900; text-transform: uppercase; border: 1px solid currentColor; }
+        .data-label { font-size: 8px; font-weight: 900; color: #3a4a75; text-transform: uppercase; letter-spacing: 0.1em; }
+        .data-val { font-family: var(--font-mono); font-weight: 900; color: white; }
+    </style>
+</head>
+<body class="force-auto">
+    <!-- Author: Vishal Joshi (vishaljoshi9694@gmail.com) -->
+    <div class="mesh-bg"></div>
+    
+    <div class="desktop-view">
+        <aside class="sidebar flex flex-col" id="desktop-sidebar"></aside>
+
+        <main class="main-container custom-scrollbar">
+            <header class="p-10 flex justify-between items-center bg-black/40 border-b border-[#1a233b] sticky top-0 z-50 backdrop-blur-xl">
+                <div class="flex items-center gap-10">
+                    <h2 class="text-3xl font-black uppercase tracking-tighter text-white">AI Strategy Advisor</h2>
+                    <span class="text-[9px] font-black text-[#00e5ff] uppercase tracking-[0.3em]"><i class="fas fa-atom fa-spin mr-2"></i>Neural Matrix Connected</span>
+                </div>
+                <div class="flex gap-4">
+                    <button onclick="window.fetchSummary(true)" class="btn-3d-blue px-10 py-4 text-[10px]">RECALIBRATE_CORE</button>
+                    <div class="w-12 h-12 border border-[#00e5ff] flex items-center justify-center font-black text-[#00e5ff] text-xs shadow-[0_0_15px_rgba(0,229,255,0.2)]" id="d-user-init">U</div>
+                </div>
+            </header>
+            
+            <div class="p-12 space-y-4" id="d-ai-list"></div>
+        </main>
+    </div>
+
+    <!-- MOBILE -->
+    <div class="mobile-view">
+        <header class="p-6 flex justify-between items-center border-b border-[#1a233b] bg-[#060b19]/90 sticky top-0 z-50 backdrop-blur-xl">
+            <h2 class="text-sm font-black tracking-[0.2em] text-white">AI_ADVISOR</h2>
+            <div class="w-8 h-8 border border-[#00e5ff] flex items-center justify-center font-black text-[#00e5ff] text-[10px]" id="m-user-init">U</div>
+        </header>
+        <main class="p-4 space-y-6 pb-24">
+            <div id="m-ai-list" class="space-y-4"></div>
+        </main>
+        <nav class="mobile-nav" id="mobile-bottom-nav"></nav>
+    </div>
+
+    <script type="module">
+        import { initNavigation } from "./js/nav_manager.js";
+        import { checkAuth, getAuthHeaders } from "./js/auth.js";
+        import { getAISummary, getHoldings } from "./js/api.js";
+
+        initNavigation();
+        const user = checkAuth();
+        if(user) document.getElementById('d-user-init').innerText = document.getElementById('m-user-init').innerText = user.username[0].toUpperCase();
+
+        window.fetchSummary = async (fresh) => {
+            const list = document.getElementById('d-ai-list');
+            const mlist = document.getElementById('m-ai-list');
+            list.innerHTML = mlist.innerHTML = '<div class="py-20 text-center animate-pulse"><i class="fas fa-atom fa-spin text-5xl text-[#00e5ff] mb-6"></i><p class="text-[10px] font-black text-[#3a4a75] uppercase tracking-widest">Warming Neural Cache...</p></div>';
+            
+            try {
+                const res = await fetch(`/api/ai/summary/holdings${fresh ? '?fresh=true' : ''}`, { headers: getAuthHeaders() });
+                const data = await res.json();
+                render(data.analyses);
+            } catch (e) { console.error(e); }
+        };
+
+        function render(data) {
+            const list = document.getElementById('d-ai-list');
+            const mlist = document.getElementById('m-ai-list');
+            
+            const html = data.map(a => {
+                const isBuy = a.recommendation === 'BUY';
+                const glow = isBuy ? 'neon-glow-green' : a.recommendation === 'SELL' ? 'neon-glow-red' : '';
+                const color = isBuy ? 'text-[#00ff9d]' : a.recommendation === 'SELL' ? 'text-[#ff3131]' : 'text-[#7081b3]';
+                
+                return `
+                    <div class="ai-list-node ${glow}" onclick="location.href='trading.html?symbol=${a.symbol}'">
+                        <div class="flex items-center gap-6 w-[280px] shrink-0 border-r border-[#1a233b] pr-8">
+                            <div class="w-12 h-12 bg-black border border-[#1a233b] flex items-center justify-center rounded-xl"><i class="fas fa-microchip ${color} text-lg"></i></div>
+                            <div>
+                                <h3 class="text-xl font-black text-white uppercase tracking-tighter">${a.symbol}</h3>
+                                <span class="signal-pill ${color}">${a.recommendation} NODE</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex-grow">
+                            <p class="text-xs text-slate-400 font-medium leading-relaxed italic">"${a.market_narrative || a.analysis}"</p>
+                        </div>
+
+                        <div class="flex gap-8 border-l border-[#1a233b] pl-8 shrink-0">
+                            <div><p class="data-label">Target_1</p><p class="data-val text-[#00ff9d]">₹${a.target_1}</p></div>
+                            <div><p class="data-label">Stop_Loss</p><p class="data-val text-[#ff3131]">₹${a.stop_loss}</p></div>
+                            <div><p class="data-label">Confidence</p><p class="data-val text-[#00e5ff]">${a.confidence}%</p></div>
+                        </div>
+                    </div>`;
+            }).join('');
+
+            const mobileHtml = data.map(a => {
+                const color = a.recommendation === 'BUY' ? 'text-[#00ff9d]' : a.recommendation === 'SELL' ? 'text-[#ff3131]' : 'text-slate-400';
+                return `
+                    <div class="card-v3 p-6 space-y-4" onclick="location.href='trading.html?symbol=${a.symbol}'">
+                        <div class="flex justify-between items-center">
+                            <p class="font-black text-white text-lg uppercase">${a.symbol}</p>
+                            <span class="text-[9px] font-black ${color} border border-current px-3 py-1 rounded-lg uppercase">${a.recommendation}</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 leading-relaxed italic">"${a.market_narrative || a.analysis}"</p>
+                        <div class="flex justify-between pt-4 border-t border-[#1a233b]">
+                            <div><p class="data-label">Target</p><p class="data-val text-[#00ff9d]">₹${a.target_1}</p></div>
+                            <div><p class="data-label">SL</p><p class="data-val text-[#ff3131]">₹${a.stop_loss}</p></div>
+                        </div>
+                    </div>`;
+            }).join('');
+
+            list.innerHTML = html || '<p class="text-center py-20 text-slate-600 uppercase font-black text-xs">No active nodes.</p>';
+            mlist.innerHTML = mobileHtml;
+        }
+
+        window.fetchSummary(false);
+    </script>
+</body>
+</html>

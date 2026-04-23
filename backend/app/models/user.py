@@ -20,11 +20,19 @@ class User(Base):
     role = Column(Enum(UserRole), default=UserRole.Trader, index=True)
     is_active = Column(Boolean, default=True, index=True)
     
+    # Linked accounts for updates
+    telegram_id = Column(String, nullable=True)
+    linked_gmail = Column(String, nullable=True)
+    
+    # Admin approval system
+    pending_profile_update = Column(JSON, nullable=True)
+    
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     brokers = relationship("BrokerCredential", back_populates="owner")
     watchlists = relationship("Watchlist", back_populates="owner", cascade="all, delete-orphan")
+    subscription = relationship("Subscription", back_populates="user", uselist=False)
 
 
 class BrokerCredential(Base):

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ROOT_AUTHORITY | INSIGHT.V3</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/mobile_unified.css">
+    <style>
+        .admin-sidebar { width: 280px; border-right: 1px solid var(--border-dim); height: 100vh; background: var(--bg-panel); }
+        .btn-active-admin { background: var(--bg-active); color: var(--primary-neon) !important; border-right: 4px solid var(--primary-neon); font-weight: 900; }
+        .admin-table th { padding: 20px 24px; font-size: 10px; font-weight: 900; color: var(--text-dim); border-bottom: 2px solid #1a233b; text-align: left; background: #040812; text-transform: uppercase; }
+        .admin-table td { padding: 20px 24px; font-size: 13px; border-bottom: 1px solid #1a233b; transition: all 0.2s; }
+        .admin-table tr:hover td { background: var(--bg-active); }
+    </style>
+</head>
+<body class="force-auto">
+    <div class="desktop-view">
+        <aside class="admin-sidebar flex flex-col p-8 shrink-0">
+            <div class="flex items-center gap-5 mb-12"><div class="w-14 h-14 bg-black border border-[#00e5ff] flex items-center justify-center shadow-lg shadow-[#00e5ff]/20"><i class="fas fa-user-shield text-[#00e5ff] text-xl"></i></div><div class="flex flex-col"><span class="text-2xl font-black tracking-tighter text-white uppercase">ROOT_AUTH</span><span class="text-[8px] font-black text-[#00e5ff] uppercase tracking-[0.4em]">Authority_v3.0</span></div></div>
+            <nav class="flex-grow space-y-2">
+                <button onclick="showSection('users')" class="w-full flex items-center gap-5 px-6 py-5 text-[10px] font-black uppercase tracking-widest section-btn text-[#3a4a75]" data-section="users"><i class="fas fa-users-cog w-5"></i> MATRIX</button>
+                <button onclick="showSection('approvals')" class="w-full flex items-center gap-5 px-6 py-5 text-[10px] font-black uppercase tracking-widest section-btn text-[#3a4a75]" data-section="approvals"><i class="fas fa-fingerprint w-5"></i> CLEARANCE</button>
+            </nav>
+            <div class="mt-auto pt-8 border-t border-[#1a233b]"><button onclick="location.href='dashboard.html'" class="w-full flex items-center gap-5 px-6 py-5 text-[10px] font-black uppercase tracking-widest text-[#3a4a75] hover:text-[#00e5ff]"><i class="fas fa-sign-out-alt w-5"></i> EXIT_CONSOLE</button></div>
+        </aside>
+        <main class="main-container flex flex-col overflow-hidden bg-[#060b19]">
+            <header class="p-10 flex justify-between items-center bg-black/40 border-b border-[#1a233b] backdrop-blur-xl">
+                <h2 id="section-title" class="text-2xl font-black uppercase tracking-tighter text-white">IDENTITY_MATRIX</h2>
+                <button onclick="window.handleLogout()" class="w-12 h-12 bg-black border border-[#1a233b] hover:border-[#ff0055] hover:text-[#ff0055] flex items-center justify-center transition-all"><i class="fas fa-power-off"></i></button>
+            </header>
+            <div class="flex-grow overflow-y-auto p-12 space-y-12">
+                <div id="section-users" class="section-content space-y-12">
+                    <div class="grid grid-cols-3 gap-8">
+                        <div class="neon-glow-blue bg-black/40 p-8"><p class="stat-label-v3">Total_Nodes</p><h3 id="stat-users" class="text-4xl font-black tabular-nums text-white">--</h3></div>
+                        <div class="neon-glow-blue bg-black/40 p-8"><p class="stat-label-v3">Active_Tiers</p><h3 id="stat-subs" class="text-4xl font-black tabular-nums text-[#00e5ff]">--</h3></div>
+                        <div class="neon-glow-blue bg-black/40 p-8"><p class="stat-label-v3">Live_Uplinks</p><h3 id="stat-brokers" class="text-4xl font-black tabular-nums text-[#00ff9d]">--</h3></div>
+                    </div>
+                    <div class="neon-glow-blue bg-card overflow-hidden"><table class="w-full admin-table"><thead><tr><th>IDENTITY</th><th>PROTOCOL</th><th>UPLINKS</th><th>STATUS</th><th class="text-right">ACTION</th></tr></thead><tbody id="user-table-body" class="text-white"></tbody></table></div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script type="module">
+        import { checkAuth, logout, getAuthHeaders } from './js/auth.js';
+        const user = checkAuth(); if (!user || user.role !== 'Admin') window.location.href = 'dashboard.html';
+        window.handleLogout = () => { if(confirm('TERMINATE_SESSION?')) { logout(); window.location.href = 'login.html'; } };
+        window.showSection = async (id) => {
+            document.querySelectorAll(' .section-content').forEach(s => s.classList.add('hidden'));
+            document.getElementById(`section-${id}`).classList.remove('hidden');
+            document.querySelectorAll(' .section-btn').forEach(b => b.classList.remove('btn-active-admin'));
+            const btn = document.querySelector(`[data-section="${id}"]`); btn.classList.add('btn-active-admin');
+            document.getElementById('section-title').textContent = btn.textContent.trim();
+            await load(id);
+        };
+        async function load(sec) {
+            try { 
+                const [ru, rs] = await Promise.all([fetch('/api/admin-dashboard/users', {headers: getAuthHeaders()}), fetch('/api/admin-dashboard/stats', {headers: getAuthHeaders()})]);
+                const users = await ru.json(); const stats = await rs.json();
+                document.getElementById('stat-users').textContent = stats.total_users; document.getElementById('stat-subs').textContent = stats.active_subscriptions; document.getElementById('stat-brokers').textContent = stats.active_brokers;
+                document.getElementById('user-table-body').innerHTML = users.map(u => `<tr><td><p class="font-black uppercase">${u.username}</p><p class="text-[9px] text-[#3a4a75]">${u.email}</p></td><td><span class="px-3 py-1 border border-[#1a233b] text-[10px] font-black">${u.subscription?.plan || 'STANDARD'}</span></td><td class="font-black tabular-nums">${u.brokers_count}</td><td><div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full ${u.is_active ? 'bg-[#00ff9d] shadow-[0_0_10px_rgba(0,255,157,0.5)]' : 'bg-[#ff0055] shadow-[0_0_10px_rgba(255,0,85,0.5)]'}"></div><span class="text-[9px] font-black uppercase">${u.is_active ? 'Authorized' : 'Restricted'}</span></div></td><td class="text-right"><button class="text-[#3a4a75] hover:text-[#ff0055] font-black text-[10px]">PURGE</button></td></tr>`).join('');
+            } catch(e) {}
+        }
+        window.showSection('users');
+    </script>
+</body>
+</html>

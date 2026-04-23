@@ -1,0 +1,181 @@
+<!-- Author: Vishal Joshi (vishaljoshi9694@gmail.com) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TRADE_HISTORY | INSIGHT.V3</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/mobile_unified.css">
+    <style>
+        .ledger-table th { padding: 20px 24px; font-size: 10px; font-weight: 900; color: var(--text-dim); border-bottom: 1px solid var(--border-dim); text-align: left; letter-spacing: 0.2em; text-transform: uppercase; }
+        .ledger-table td { padding: 20px 24px; font-size: 12px; border-bottom: 1px solid var(--border-dim); transition: all 0.2s; }
+        .ledger-table tr:hover td { background: var(--bg-active); border-bottom-color: var(--neon-blue); }
+        
+        .badge-buy { background: rgba(0, 255, 157, 0.1); color: var(--neon-green); border: 1px solid var(--neon-green); box-shadow: 0 0 10px rgba(0,255,157,0.2); }
+        .badge-sell { background: rgba(255, 49, 49, 0.1); color: var(--neon-red); border: 1px solid var(--neon-red); box-shadow: 0 0 10px rgba(255,49,49,0.2); }
+        
+        .filter-select { background: #0f172a !important; border: 1px solid var(--border-dim) !important; border-radius: 12px !important; padding: 14px 20px !important; font-size: 11px !important; font-weight: 900 !important; color: var(--text-secondary) !important; text-transform: uppercase; letter-spacing: 0.1em; transition: all 0.3s; }
+        .filter-select:focus { border-color: var(--neon-blue) !important; color: white !important; box-shadow: 0 0 15px rgba(0, 229, 255, 0.2) !important; }
+    </style>
+</head>
+<body class="force-auto">
+    <div class="desktop-view">
+        <aside class="sidebar flex flex-col" id="desktop-sidebar"></aside>
+
+        <main class="main-container custom-scrollbar">
+            <header class="p-10 flex justify-between items-center bg-black/40 border-b border-[#1a233b] sticky top-0 z-50 backdrop-blur-xl">
+                <div class="flex items-center gap-10">
+                    <div>
+                        <h2 class="text-3xl font-black uppercase tracking-tighter text-white">Execution_Archive</h2>
+                        <p class="text-[8px] font-black text-[#3a4a75] tracking-[0.5em] uppercase mt-1">Historical_Ledger_Sync</p>
+                    </div>
+                    <div class="flex gap-4">
+                        <select id="fy-filter-d" onchange="load()" class="filter-select"><option value="2025-26">FY 25-26</option><option value="2024-25">FY 24-25</option></select>
+                        <select id="broker-filter-d" onchange="load()" class="filter-select"><option value="all">UNIFIED_LEDGER</option></select>
+                    </div>
+                </div>
+                <div class="flex gap-6 items-center">
+                    <button onclick="syncLedger()" id="sync-btn-d" class="btn-3d-blue px-8 py-4 text-[10px]"><i class="fas fa-sync-alt mr-2"></i> FORCE_SYNC</button>
+                    <div class="w-12 h-12 border border-[#00e5ff] flex items-center justify-center font-black text-[#00e5ff] text-xs shadow-[0_0_15px_rgba(0,229,255,0.2)]" id="d-user-init">U</div>
+                </div>
+            </header>
+            
+            <div class="p-12">
+                <div class="card-v3 neon-glow-blue bg-[#040812] p-0 overflow-hidden">
+                    <div class="p-6 bg-[#0e1428] border-b border-[#1a233b] flex justify-between items-center">
+                        <span class="indian-label text-white">Historical Trade Ledger</span>
+                    </div>
+                    <table class="w-full text-left border-collapse ledger-table">
+                        <thead>
+                            <tr>
+                                <th>TIMESTAMP</th><th>ASSET_NODE</th><th>ACTION</th><th class="text-right">VOLUME</th><th class="text-right">PRICE</th><th class="text-right">UPLINK</th>
+                            </tr>
+                        </thead>
+                        <tbody id="d-ledger-body" class="font-medium tabular-nums text-white"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="mobile-view">
+        <header class="p-6 flex justify-between items-center border-b border-[#1a233b] sticky top-0 z-[1000] bg-[#060b19]/90 backdrop-blur-xl">
+            <h2 class="text-sm font-black tracking-[0.2em] text-white uppercase">HISTORY</h2>
+            <div class="flex gap-4">
+                <button onclick="syncLedger()" id="sync-btn-m" class="text-[#00e5ff]"><i class="fas fa-sync-alt text-xs"></i></button>
+                <div class="w-8 h-8 border border-[#00e5ff] flex items-center justify-center font-black text-[#00e5ff] text-[10px]" id="m-user-init">U</div>
+            </div>
+        </header>
+
+        <main class="p-4 space-y-6 pb-24">
+            <div class="flex gap-2 overflow-x-auto no-scrollbar">
+                <select id="fy-filter-m" onchange="load()" class="filter-select py-3"><option value="2025-26">FY 25-26</option></select>
+                <select id="broker-filter-m" onchange="load()" class="filter-select py-3 flex-grow"><option value="all">ALL UPLINKS</option></select>
+            </div>
+            <div id="m-ledger-list" class="space-y-4"></div>
+        </main>
+
+        <nav class="mobile-nav" id="mobile-bottom-nav"></nav>
+    </div>
+
+    <script type="module">
+        import { initNavigation } from "./js/nav_manager.js";
+        import { checkAuth } from "./js/auth.js";
+        import { getTradeHistory, getBrokers } from "./js/api.js";
+
+        initNavigation();
+        const user = checkAuth();
+        if(user) document.getElementById('d-user-init').innerText = document.getElementById('m-user-init').innerText = user.username[0].toUpperCase();
+
+        let brokers = [];
+
+        async function init() {
+            try {
+                brokers = await getBrokers();
+                const selects = [document.getElementById('broker-filter-d'), document.getElementById('broker-filter-m')];
+                selects.forEach(s => {
+                    if(!s) return;
+                    brokers.forEach(b => {
+                        const opt = document.createElement('option');
+                        opt.value = b.broker_name; opt.textContent = b.broker_name.toUpperCase();
+                        s.appendChild(opt);
+                    });
+                });
+                load();
+            } catch(e) {}
+        }
+
+        window.syncLedger = async () => {
+            const btnD = document.getElementById('sync-btn-d');
+            const btnM = document.getElementById('sync-btn-m');
+            btnD.innerHTML = '<i class="fas fa-sync-alt fa-spin mr-2"></i> SYNCING...';
+            if(btnM) btnM.innerHTML = '<i class="fas fa-sync-alt fa-spin text-xs"></i>';
+            try { await load(); } finally {
+                btnD.innerHTML = '<i class="fas fa-sync-alt mr-2"></i> FORCE_SYNC';
+                if(btnM) btnM.innerHTML = '<i class="fas fa-sync-alt text-xs"></i>';
+            }
+        };
+
+        window.load = async () => {
+            const listD = document.getElementById('d-ledger-body');
+            const listM = document.getElementById('m-ledger-list');
+            const fy = document.getElementById('fy-filter-d').value;
+            const broker = document.getElementById('broker-filter-d').value;
+
+            const loader = '<div class="py-20 text-center opacity-50 flex flex-col items-center"><i class="fas fa-atom fa-spin text-4xl mb-6 text-[#00e5ff]"></i><p class="text-[10px] font-black uppercase tracking-widest text-[#00e5ff]">Accessing Ledger Core...</p></div>';
+            listD.innerHTML = `<tr><td colspan="6">${loader}</td></tr>`;
+            listM.innerHTML = loader;
+
+            try {
+                const trades = await getTradeHistory();
+                const filtered = trades.filter(t => (broker === 'all' || t.broker === broker));
+                
+                if(!filtered.length) {
+                    const empty = '<div class="py-20 text-center opacity-50 flex flex-col items-center"><i class="fas fa-folder-open text-5xl mb-6 text-[#3a4a75]"></i><p class="text-[10px] font-black uppercase tracking-[0.3em] text-[#3a4a75]">No Historical Records Found</p></div>';
+                    listD.innerHTML = `<tr><td colspan="6">${empty}</td></tr>`;
+                    listM.innerHTML = empty;
+                    return;
+                }
+
+                listD.innerHTML = filtered.map(o => {
+                    const isBuy = o.side.includes('BUY');
+                    return `
+                    <tr class="hover:bg-[#1a233b] transition-colors">
+                        <td class="text-[#7081b3] font-mono text-xs">${new Date(o.created_at).toLocaleString()}</td>
+                        <td><p class="font-black text-white uppercase tracking-tighter text-lg">${o.symbol}</p></td>
+                        <td><span class="px-4 py-1.5 rounded-xl text-[9px] font-black uppercase shadow-lg ${isBuy ? 'badge-buy' : 'badge-sell'}">${o.side}</span></td>
+                        <td class="text-right font-mono font-bold text-[#7081b3]">${o.quantity}</td>
+                        <td class="text-right font-mono font-black text-white">₹${o.price.toFixed(2)}</td>
+                        <td class="text-right"><span class="text-[9px] font-black uppercase text-[#00e5ff] tracking-widest bg-[#00e5ff]/5 px-3 py-1 rounded-lg border border-[#00e5ff]/20 shadow-[0_0_10px_rgba(0,229,255,0.1)]">${o.broker}</span></td>
+                    </tr>`;
+                }).join('');
+
+                listM.innerHTML = filtered.map(o => {
+                    const isBuy = o.side.includes('BUY');
+                    return `
+                    <div class="card-v3 p-6 flex flex-col space-y-4">
+                        <div class="flex justify-between items-center">
+                            <p class="font-black text-white uppercase tracking-tighter text-lg">${o.symbol}</p>
+                            <span class="px-4 py-1.5 rounded-xl text-[9px] font-black uppercase shadow-lg ${isBuy ? 'badge-buy' : 'badge-sell'}">${o.side}</span>
+                        </div>
+                        <div class="flex justify-between items-center text-[#7081b3] text-[10px] font-mono">
+                            <span>${new Date(o.created_at).toLocaleString()}</span>
+                            <span class="text-[#00e5ff] uppercase font-black">${o.broker}</span>
+                        </div>
+                        <div class="flex justify-between items-center pt-4 border-t border-[#1a233b]">
+                            <p class="indian-label">Price: <span class="text-white font-mono font-black text-sm ml-2">₹${o.price.toFixed(2)}</span></p>
+                            <p class="indian-label">Qty: <span class="text-white font-mono font-black text-sm ml-2">${o.quantity}</span></p>
+                        </div>
+                    </div>`;
+                }).join('');
+            } catch(e) {
+                listD.innerHTML = `<tr><td colspan="6" class="text-center text-red-500 py-10">Error loading ledger.</td></tr>`;
+            }
+        };
+
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!-- Author: Vishal Joshi (vishaljoshi9694@gmail.com) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | Insight</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap");
+        body { font-family: "Inter", sans-serif; background-color: #020617; }
+        .glass { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(30, 41, 59, 0.5); }
+    </style>
+    <link rel="manifest" href="manifest.json">
+</head>
+<body class="text-slate-100 min-h-screen flex items-center justify-center p-6">
+    <div class="glass p-10 rounded-[2.5rem] w-full max-w-md border-blue-500/20">
+        <div class="text-center mb-10">
+            <h1 class="text-3xl font-black mb-2">Join Insight</h1>
+            <p class="text-slate-500">Create your trading account</p>
+        </div>
+
+        <form id="register-form" class="space-y-4">
+            <div>
+                <label class="text-[10px] uppercase font-black text-slate-500 tracking-widest ml-1 mb-1 block">Username</label>
+                <input type="text" id="username" required class="w-full bg-slate-900/50 border border-slate-800 rounded-2xl px-5 py-3 focus:outline-none focus:border-blue-500 transition-all text-slate-200">
+            </div>
+            <div>
+                <label class="text-[10px] uppercase font-black text-slate-500 tracking-widest ml-1 mb-1 block">Email Address</label>
+                <input type="email" id="email" required class="w-full bg-slate-900/50 border border-slate-800 rounded-2xl px-5 py-3 focus:outline-none focus:border-blue-500 transition-all text-slate-200">
+            </div>
+            <div>
+                <label class="text-[10px] uppercase font-black text-slate-500 tracking-widest ml-1 mb-1 block">Mobile Number</label>
+                <input type="tel" id="mobile" required class="w-full bg-slate-900/50 border border-slate-800 rounded-2xl px-5 py-3 focus:outline-none focus:border-blue-500 transition-all text-slate-200">
+            </div>
+            <div>
+                <label class="text-[10px] uppercase font-black text-slate-500 tracking-widest ml-1 mb-1 block">Password</label>
+                <input type="password" id="password" required class="w-full bg-slate-900/50 border border-slate-800 rounded-2xl px-5 py-3 focus:outline-none focus:border-blue-500 transition-all text-slate-200">
+            </div>
+            
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-2xl font-black text-lg transition-all shadow-xl shadow-blue-900/20 mt-4">Create Account</button>
+        </form>
+
+        <div class="mt-8 text-center">
+            <p class="text-slate-500 text-sm">Already have an account? <a href="login.html" class="text-blue-400 font-bold">Sign In</a></p>
+        </div>
+    </div>
+
+    <script type="module">
+        document.getElementById('register-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const payload = {
+                username: document.getElementById('username').value,
+                email: document.getElementById('email').value,
+                mobile_no: document.getElementById('mobile').value,
+                password: document.getElementById('password').value
+            };
+            
+            try {
+                const res = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await res.json();
+                if (res.ok) {
+                    alert('Registration successful! Please login.');
+                    window.location.href = 'login.html';
+                } else {
+                    alert(data.detail || 'Registration failed');
+                }
+            } catch (err) {
+                alert('Connection error');
+            }
+        };
+    </script>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('SW Registered', reg))
+                    .catch(err => console.log('SW Failed', err));
+            });
+        }
+    </script>
+</body>
+
+</html>

@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:15-alpine
+    image: timescale/timescaledb:latest-pg15
     environment:
       POSTGRES_USER: insight_user
       POSTGRES_PASSWORD: insight_pass

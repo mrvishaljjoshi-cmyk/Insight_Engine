@@ -1,0 +1,191 @@
+<!-- Author: Vishal Joshi (vishaljoshi9694@gmail.com) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Insight</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap");
+        body { font-family: "Inter", sans-serif; background-color: #020617; }
+        .glass { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(30, 41, 59, 0.5); }
+        .view-btn { position: relative; z-index: 10; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .view-slider { position: absolute; height: 80%; top: 10%; background: #1e293b; border-radius: 8px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 0; border: 1px solid rgba(59, 130, 246, 0.3); }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .shake { animation: shake 0.3s ease-in-out; }
+    </style>
+    <link rel="manifest" href="manifest.json">
+</head>
+<body class="text-slate-100 min-h-screen flex items-center justify-center p-6">
+    <div id="login-container" class="glass p-10 rounded-[2.5rem] w-full max-w-md border-blue-500/20 shadow-2xl">
+        <div class="text-center mb-8">
+            <div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-500/20">
+                <i class="fas fa-chart-line text-2xl"></i>
+            </div>
+            <h1 class="text-3xl font-black mb-2">Insight Login</h1>
+            <p class="text-slate-500 text-sm">Professional Indian Trading Engine</p>
+        </div>
+
+        <!-- Login Tabs -->
+        <div class="flex bg-slate-950/50 p-1.5 rounded-2xl border border-slate-800 mb-6">
+            <button onclick="setLoginMode('Trader')" id="tab-trader" class="flex-1 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all bg-blue-600 text-white">
+                <i class="fas fa-user mr-2"></i> User Login
+            </button>
+            <button onclick="setLoginMode('Admin')" id="tab-admin" class="flex-1 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all text-slate-500 hover:text-white">
+                <i class="fas fa-user-shield mr-2"></i> Admin Login
+            </button>
+        </div>
+
+        <!-- View Mode Selection (Sliding UI) -->
+        <div class="mb-10">
+            <label class="text-[9px] uppercase font-black text-slate-600 tracking-[0.2em] mb-3 block text-center">Preferred Experience</label>
+            <div class="relative flex bg-slate-950/50 p-1.5 rounded-2xl border border-slate-800/50">
+                <div id="view-slider" class="view-slider" style="width: 33.33%; left: 33.33%;"></div>
+                <button onclick="setViewPreference('mobile')" id="view-mobile" class="view-btn flex-1 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all text-slate-500">Mobile</button>
+                <button onclick="setViewPreference('auto')" id="view-auto" class="view-btn flex-1 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all text-blue-400">Auto</button>
+                <button onclick="setViewPreference('desktop')" id="view-desktop" class="view-btn flex-1 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all text-slate-500">Desktop</button>
+            </div>
+        </div>
+
+        <form id="login-form" class="space-y-6">
+            <div>
+                <label class="text-[10px] uppercase font-black text-slate-500 tracking-widest ml-1 mb-2 block">Username or Email</label>
+                <input type="text" id="username" required
+                    class="w-full bg-slate-950 border border-slate-800 rounded-2xl px-5 py-4 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-slate-200"
+                    placeholder="Enter your username">
+            </div>
+            <div>
+                <label class="text-[10px] uppercase font-black text-slate-500 tracking-widest ml-1 mb-2 block">Password</label>
+                <input type="password" id="password" required
+                    class="w-full bg-slate-950 border border-slate-800 rounded-2xl px-5 py-4 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-slate-200"
+                    placeholder="••••••••">
+            </div>
+
+            <div class="flex items-center justify-between text-xs px-1">
+                <label class="flex items-center gap-2 cursor-pointer group">
+                    <input type="checkbox" id="remember_me" class="w-4 h-4 rounded border-slate-700 bg-slate-900 text-blue-600 focus:ring-blue-500">
+                    <span class="text-slate-500 group-hover:text-slate-300 transition-colors uppercase font-bold">Stay logged in</span>
+                </label>
+                <a href="#" onclick="forgotPassword()" class="text-blue-500 hover:text-blue-400 font-black uppercase tracking-widest">Help?</a>
+            </div>
+
+            <button type="submit" id="login-btn"
+                class="w-full bg-blue-600 hover:bg-blue-500 py-5 rounded-[1.5rem] font-black text-lg transition-all shadow-xl shadow-blue-900/20 flex items-center justify-center gap-3 group active:scale-[0.98]">
+                <span>SIGN IN</span>
+                <i class="fas fa-chevron-right text-xs group-hover:translate-x-1 transition-transform"></i>
+            </button>
+        </form>
+
+        <div class="mt-10 text-center">
+            <p class="text-slate-500 text-xs font-bold uppercase tracking-widest">New trader? <a href="register.html" class="text-blue-400 hover:text-blue-300 transition-colors">Create Account</a></p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { saveAuth } from './js/auth.js';
+
+        let loginRole = 'Trader';
+        let viewPreference = localStorage.getItem('viewPreference') || 'auto';
+
+        window.setViewPreference = (pref) => {
+            viewPreference = pref;
+            localStorage.setItem('viewPreference', pref);
+            const slider = document.getElementById('view-slider');
+            const btns = { 'mobile': 0, 'auto': 33.33, 'desktop': 66.66 };
+            
+            slider.style.left = btns[pref] + '%';
+            
+            ['mobile', 'auto', 'desktop'].forEach(p => {
+                const el = document.getElementById(`view-${p}`);
+                if (p === pref) {
+                    el.classList.add('text-blue-400');
+                    el.classList.remove('text-slate-500');
+                } else {
+                    el.classList.remove('text-blue-400');
+                    el.classList.add('text-slate-500');
+                }
+            });
+        };
+
+        window.setLoginMode = (role) => {
+            loginRole = role;
+            const traderBtn = document.getElementById('tab-trader');
+            const adminBtn = document.getElementById('tab-admin');
+            const loginBtn = document.getElementById('login-btn');
+            
+            if (role === 'Trader') {
+                traderBtn.className = "flex-1 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all bg-blue-600 text-white shadow-lg";
+                adminBtn.className = "flex-1 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all text-slate-500 hover:text-white";
+                loginBtn.className = "w-full bg-blue-600 hover:bg-blue-500 py-5 rounded-[1.5rem] font-black text-lg transition-all shadow-xl shadow-blue-900/20 flex items-center justify-center gap-3 group active:scale-[0.98]";
+            } else {
+                adminBtn.className = "flex-1 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all bg-indigo-600 text-white shadow-lg";
+                traderBtn.className = "flex-1 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all text-slate-500 hover:text-white";
+                loginBtn.className = "w-full bg-indigo-600 hover:bg-indigo-500 py-5 rounded-[1.5rem] font-black text-lg transition-all shadow-xl shadow-indigo-900/20 flex items-center justify-center gap-3 group active:scale-[0.98]";
+            }
+        };
+
+        function showError(message) {
+            const container = document.getElementById('login-container');
+            container.classList.add('shake');
+            setTimeout(() => container.classList.remove('shake'), 300);
+            alert(message);
+        }
+
+        document.getElementById('login-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('login-btn');
+            const original = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> VERIFYING...';
+            btn.disabled = true;
+
+            const username_or_email = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const remember_me = document.getElementById('remember_me').checked;
+
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username_or_email, password, remember_me })
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    if (data.role !== loginRole) {
+                        showError(`Role Mismatch: This account is a ${data.role}. Please use the correct tab.`);
+                        btn.innerHTML = original; btn.disabled = false;
+                        return;
+                    }
+
+                    saveAuth(data.token, data.role, data.username, data.user_id);
+                    window.location.href = (data.role === 'Admin') ? 'admin.html' : 'dashboard.html';
+                } else {
+                    showError(data.detail || 'Invalid login details');
+                    btn.innerHTML = original; btn.disabled = false;
+                }
+            } catch (err) {
+                showError('Connection failed. Backend may be offline.');
+                btn.innerHTML = original; btn.disabled = false;
+            }
+        };
+
+        // Init view preference
+        window.setViewPreference(viewPreference);
+    </script>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(console.error);
+            });
+        }
+    </script>
+</body>
+</html>

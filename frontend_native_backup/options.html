@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Options | Insight</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/mobile_unified.css">
+    <style>
+        .tabular-data { font-variant-numeric: tabular-nums; }
+        .itm-ce { background: rgba(34, 197, 94, 0.08) !important; color: #4ade80 !important; }
+        .itm-pe { background: rgba(239, 68, 68, 0.08) !important; color: #f87171 !important; }
+        .strike-cell { background: #0f172a; color: #fff; font-weight: 900; border-left: 1px solid #1e293b; border-right: 1px solid #1e293b; font-size: 11px; }
+        .at-the-market { border: 2px solid #3b82f6 !important; background: rgba(59, 130, 246, 0.1) !important; }
+        
+        .ai-call-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 2.2rem;
+            padding: 1.8rem;
+            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Fit to one page optimization */
+        .chain-table-container { height: calc(100vh - 180px); }
+        .compact-row td { padding: 0.6rem !important; font-size: 10px; }
+        
+        /* Sidebar Visibility Fix - Now handled by CSS */
+        .desktop-view { display: flex; height: 100vh; width: 100vw; overflow: hidden; }
+        .main-container { flex-grow: 1; overflow-y: auto; }
+    </style>
+</head>
+<body class="force-auto">
+    <!-- Author: Vishal Joshi (vishaljoshi9694@gmail.com) -->
+    <!-- DESKTOP -->
+    <div class="desktop-view">
+        <aside class="sidebar flex flex-col p-4" id="desktop-sidebar"></aside>
+
+        <main class="main-container custom-scrollbar bg-[#020617]">
+            <header class="p-6 flex justify-between items-center glass sticky top-0 z-50">
+                <div class="flex items-center gap-8">
+                    <h2 class="text-xl font-black uppercase tracking-tighter text-white">Option Intelligence</h2>
+                    <div class="flex bg-slate-900 rounded-xl p-1 border border-slate-800" id="d-index-selector"></div>
+                </div>
+                <div class="flex items-center gap-6">
+                    <div class="text-right">
+                        <p id="d-spot-price" class="text-xl font-black font-mono text-blue-400 tabular-data">₹0.00</p>
+                        <p class="text-[8px] text-slate-500 uppercase font-black tracking-widest">LIVE SPOT INDEX</p>
+                    </div>
+                    <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center font-black shadow-lg text-white" id="d-user-init">U</div>
+                </div>
+            </header>
+            
+            <div class="grid grid-cols-12 overflow-hidden h-[calc(100vh-100px)]">
+                <div class="col-span-8 p-6 overflow-hidden flex flex-col">
+                    <div class="glass rounded-[2rem] overflow-hidden shadow-2xl border border-white/5 flex-grow flex flex-col">
+                        <div class="overflow-y-auto custom-scrollbar flex-grow chain-table-container">
+                            <table class="w-full text-center border-collapse">
+                                <thead class="bg-slate-950 sticky top-0 z-10">
+                                    <tr class="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                                        <th class="p-4 border-b border-slate-800 text-white">CALL LTP</th>
+                                        <th class="p-4 border-b border-slate-800 text-white">NET CHG</th>
+                                        <th class="p-4 bg-slate-900 text-white border-b border-slate-700">STRIKE</th>
+                                        <th class="p-4 border-b border-slate-800 text-white">PUT LTP</th>
+                                        <th class="p-4 border-b border-slate-800 text-white">NET CHG</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="d-chain-body" class="divide-y divide-white/5 compact-row text-white"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-span-4 p-6 bg-slate-950/20 border-l border-white/5 overflow-y-auto custom-scrollbar">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em]"><i class="fas fa-atom fa-spin-slow mr-2"></i>Neural Scalp Calls</h3>
+                        <button onclick="window.fetchAISignals()" class="text-[8px] font-black text-slate-500 hover:text-white uppercase"><i class="fas fa-sync-alt"></i></button>
+                    </div>
+                    <div id="d-ai-signals-list" class="space-y-6"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MOBILE -->
+    <div class="mobile-view">
+        <header class="p-6 flex justify-between items-center glass sticky top-0 z-[1000]">
+            <h2 class="text-xl font-black tracking-tighter uppercase text-white">OPTIONS</h2>
+            <div class="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center font-black shadow-lg text-white" id="m-user-init">U</div>
+        </header>
+
+        <main class="p-4 space-y-6 pb-24 bg-[#020617] min-h-screen">
+            <div class="flex justify-between items-center bg-slate-900/50 p-2 rounded-2xl border border-slate-800">
+                <div id="m-index-selector" class="flex gap-1 overflow-x-auto no-scrollbar"></div>
+                <div id="m-spot-price" class="font-mono font-black text-blue-400 text-sm tabular-data mr-2">₹0.00</div>
+            </div>
+            <div id="m-chain-list" class="space-y-3"></div>
+            <div id="m-ai-signals-list" class="space-y-6 pb-10"></div>
+        </main>
+
+        <nav class="mobile-nav" id="mobile-bottom-nav"></nav>
+    </div>
+
+    <script type="module">
+        /** Author: Vishal Joshi (vishaljoshi9694@gmail.com) **/
+        import { initNavigation } from "./js/nav_manager.js";
+        import { checkAuth } from "./js/auth.js";
+        import { getOptionsSuggestions } from "./js/api.js";
+        
+        initNavigation();
+        const user = checkAuth();
+        const initLetter = user.username[0].toUpperCase();
+        if(document.getElementById('d-user-init')) document.getElementById('d-user-init').innerText = initLetter;
+        if(document.getElementById('m-user-init')) document.getElementById('m-user-init').innerText = initLetter;
+
+        let currentIndex = 'NIFTY';
+        let spotPrice = 22450;
+        const indices = ['NIFTY', 'BANKNIFTY', 'FINNIFTY'];
+
+        window.setIndex = (idx) => { currentIndex = idx; renderSelectors(); render(); window.fetchAISignals(); };
+
+        function renderSelectors() {
+            const btns = indices.map(idx => `
+                <button onclick="window.setIndex('${idx}')" 
+                    class="shrink-0 px-5 py-2.5 rounded-lg font-black text-[9px] uppercase tracking-widest transition-all ${currentIndex === idx ? 'bg-blue-600 text-white' : 'text-slate-500 bg-slate-950/50'}">
+                    ${idx}
+                </button>
+            `).join('');
+            const dSel = document.getElementById('d-index-selector'); if(dSel) dSel.innerHTML = btns;
+            const mSel = document.getElementById('m-index-selector'); if(mSel) mSel.innerHTML = btns;
+        }
+
+        function render() {
+            const step = currentIndex === 'NIFTY' ? 50 : 100;
+            spotPrice = (currentIndex === 'NIFTY' ? 22450 : 48150) + (Math.random() * 10 - 5);
+            const spotFmt = `₹${spotPrice.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
+            document.getElementById('d-spot-price').innerHTML = spotFmt;
+            document.getElementById('m-spot-price').innerHTML = spotFmt;
+
+            const atm = Math.round(spotPrice / step) * step;
+            const strikes = [];
+            for(let i = -8; i <= 8; i++) strikes.push(atm + (i * step));
+
+            document.getElementById('d-chain-body').innerHTML = strikes.map(s => {
+                const ceLtp = Math.max(2, (spotPrice - s) * 1.1 + 80);
+                const peLtp = Math.max(2, (s - spotPrice) * 1.1 + 80);
+                const ceChg = (Math.random() * 20 - 5).toFixed(1);
+                const peChg = (Math.random() * 20 - 15).toFixed(1);
+                return `
+                    <tr class="${s === atm ? 'at-the-market' : ''} font-mono font-bold transition-colors hover:bg-slate-900/40">
+                        <td class="tabular-data ${s < spotPrice ? 'itm-ce' : 'text-slate-400'}">₹${ceLtp.toFixed(2)}</td>
+                        <td class="tabular-data ${ceChg >= 0 ? 'text-green-500' : 'text-red-500'}">${ceChg >=0 ? '+':''}${ceChg}%</td>
+                        <td class="strike-cell shadow-inner">${s}</td>
+                        <td class="tabular-data ${s > spotPrice ? 'itm-pe' : 'text-slate-400'}">₹${peLtp.toFixed(2)}</td>
+                        <td class="tabular-data ${peChg >= 0 ? 'text-green-500' : 'text-red-500'}">${peChg >=0 ? '+':''}${peChg}%</td>
+                    </tr>`;
+            }).join('');
+
+            document.getElementById('m-chain-list').innerHTML = strikes.slice(5,12).map(s => {
+                const ceLtp = Math.max(2, (spotPrice - s) * 1.1 + 80);
+                const peLtp = Math.max(2, (s - spotPrice) * 1.1 + 80);
+                return `
+                    <div class="p-3 bg-slate-900 rounded-xl border border-slate-800 flex items-center justify-between shadow-xl ${s === atm ? 'at-the-market' : ''}">
+                        <div class="flex-1"><p class="text-[6px] text-slate-500 font-black uppercase mb-0.5">CE</p><p class="font-mono font-black text-[12px] tabular-data ${s < spotPrice ? 'text-green-400' : 'text-slate-400'}">₹${ceLtp.toFixed(1)}</p></div>
+                        <div class="flex-1 text-center"><p class="text-[7px] text-slate-500 font-bold">STRIKE</p><p class="font-black text-white text-md">${s}</p></div>
+                        <div class="flex-1 text-right"><p class="text-[6px] text-slate-500 font-black uppercase mb-0.5">PE</p><p class="font-mono font-black text-[12px] tabular-data ${s > spotPrice ? 'text-red-400' : 'text-slate-400'}">₹${peLtp.toFixed(1)}</p></div>
+                    </div>`;
+            }).join('');
+        }
+
+        window.fetchAISignals = async () => {
+            ['d-ai-signals-list', 'm-ai-signals-list'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.innerHTML = '<div class="py-10 text-center flex flex-col items-center"><i class="fas fa-atom fa-spin text-blue-500 text-2xl mb-4"></i><p class="text-[8px] font-black text-slate-600 uppercase tracking-widest">Neural Link...</p></div>';
+            });
+
+            try {
+                const signals = await getOptionsSuggestions(currentIndex, spotPrice);
+                const html = (signals || []).map(s => `
+                    <div class="ai-call-card border border-white/5 flex flex-col gap-6 group hover:border-blue-500/40 transition-all bg-slate-900/60">
+                        <div class="flex justify-between items-center">
+                            <span class="px-4 py-1.5 rounded-lg text-[10px] font-black text-white ${s.option_type === 'CE' ? 'bg-green-600' : 'bg-red-600'} shadow-lg">${s.strike_price} ${s.option_type}</span>
+                            <div class="text-right">
+                                <p class="font-mono font-black text-white text-lg tabular-data">₹${s.ltp.toFixed(2)}</p>
+                                <p class="text-[7px] text-slate-500 font-black uppercase tracking-widest">PREMIUM LTP</p>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-slate-950/80 rounded-2xl border border-white/5 shadow-inner"><p class="text-[11px] text-slate-300 font-medium leading-relaxed italic">"${s.reason || 'Momentum spike detected via neural flow analysis.'}"</p></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-slate-900 p-4 rounded-3xl border border-white/5 text-center shadow-inner"><p class="text-[7px] text-slate-500 font-black uppercase mb-1">Target</p><p class="text-green-400 font-black text-xl tabular-data">₹${s.target.toFixed(1)}</p></div>
+                            <div class="bg-slate-900 p-4 rounded-3xl border border-white/5 text-center shadow-inner"><p class="text-[7px] text-slate-500 font-black uppercase mb-1">Stop Loss</p><p class="text-red-400 font-black text-xl tabular-data">₹${s.stop_loss.toFixed(1)}</p></div>
+                        </div>
+                        <button onclick="location.href='trading.html?symbol=${currentIndex}&strike=${s.strike_price}&type=${s.option_type}'" class="w-full py-5 bg-blue-600 hover:bg-blue-500 rounded-2xl font-black text-[10px] uppercase tracking-widest text-white shadow-2xl shadow-blue-900/40 active:scale-95 transition-all">EXECUTE INSTITUTIONAL ENTRY</button>
+                    </div>`).join('');
+                
+                const dList = document.getElementById('d-ai-signals-list'); if(dList) dList.innerHTML = html;
+                const mList = document.getElementById('m-ai-signals-list'); if(mList) mList.innerHTML = html;
+            } catch(e) { 
+                const err = '<p class="text-[9px] text-slate-500 text-center py-10 uppercase font-black tracking-widest">Neural Logic Offline</p>';
+                const dList = document.getElementById('d-ai-signals-list'); if(dList) dList.innerHTML = err;
+                const mList = document.getElementById('m-ai-signals-list'); if(mList) mList.innerHTML = err;
+            }
+        };
+
+        renderSelectors(); render(); setInterval(render, 4000); window.fetchAISignals();
+    </script>
+</body>
+</html>

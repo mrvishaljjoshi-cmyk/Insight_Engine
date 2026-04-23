@@ -6,9 +6,16 @@ alembic
 pydantic
 pydantic-settings
 python-jose[cryptography]
+cryptography
 passlib[bcrypt]
 python-multipart
 google-auth
 requests
 redis
 celery
+kiteconnect
+smartapi-python
+growwapi
+dhanhq
+upstox-python-sdk
+pyotp

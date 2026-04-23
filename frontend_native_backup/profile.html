@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Account | Insight</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/mobile_unified.css">
+</head>
+<body class="force-auto">
+    <!-- DESKTOP VIEW -->
+    <div class="desktop-view">
+        <aside class="sidebar flex flex-col p-4" id="desktop-sidebar"></aside>
+
+        <main class="main-container custom-scrollbar">
+            <header class="p-8 flex justify-between items-center glass sticky top-0 z-50">
+                <div class="flex items-center gap-6">
+                    <h2 class="text-2xl font-black uppercase tracking-tighter">Security Console</h2>
+                </div>
+                <div class="flex gap-4 items-center">
+                    <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center font-black shadow-lg" id="d-user-init">U</div>
+                    <button onclick="window.triggerLogout()" class="w-10 h-10 bg-slate-800 rounded-xl flex items-center justify-center text-red-500 border border-slate-700 hover:bg-red-500/10 transition-all"><i class="fas fa-power-off"></i></button>
+                </div>
+            </header>
+            
+            <div class="p-8 max-w-4xl mx-auto space-y-8">
+                <!-- Profile Section -->
+                <div class="glass p-10 rounded-[3rem] border border-white/5 shadow-2xl space-y-8">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-black text-slate-500 uppercase tracking-[0.2em] text-xs">Profile Credentials</h3>
+                        <div id="d-pending-badge" class="hidden px-4 py-1.5 bg-yellow-500/10 text-yellow-500 text-[9px] font-black uppercase border border-yellow-500/20 rounded-full animate-pulse">Update Pending Approval</div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-8">
+                        <div class="space-y-2">
+                            <label class="text-[9px] uppercase font-black text-slate-600 tracking-widest ml-2">Identity</label>
+                            <input type="text" id="d-username" disabled class="p-4 bg-slate-950/50 border-slate-800 text-slate-400 opacity-60">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[9px] uppercase font-black text-slate-600 tracking-widest ml-2">Access Level</label>
+                            <input type="text" id="d-role" disabled class="p-4 bg-slate-950/50 border-slate-800 text-indigo-400 opacity-60 uppercase font-black">
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-[9px] uppercase font-black text-slate-600 tracking-widest ml-2">Verified Email</label>
+                        <input type="email" id="d-email" class="p-4 text-white">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-8">
+                        <div class="space-y-2">
+                            <label class="text-[9px] uppercase font-black text-slate-600 tracking-widest ml-2">Mobile Contact</label>
+                            <input type="text" id="d-mobile_no" class="p-4 text-white">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[9px] uppercase font-black text-slate-600 tracking-widest ml-2">Telegram Handle</label>
+                            <input type="text" id="d-telegram_id" class="p-4 text-white" placeholder="@username">
+                        </div>
+                    </div>
+
+                    <button onclick="window.saveProfile('d')" id="d-save-btn" class="w-full py-5 bg-blue-600 hover:bg-blue-500 rounded-[2rem] font-black uppercase text-sm shadow-xl transition-all active:scale-[0.98]">Synchronize Profile Updates</button>
+                </div>
+
+                <!-- Password Section -->
+                <div class="glass p-10 rounded-[3rem] border border-white/5 shadow-2xl space-y-8">
+                    <h3 class="font-black text-red-500 uppercase tracking-[0.2em] text-xs">Security Overhaul</h3>
+                    <div class="grid grid-cols-2 gap-8">
+                        <input type="password" id="d-curr-pass" placeholder="Verify Current Password" class="p-4">
+                        <input type="password" id="d-new-pass" placeholder="Establish New Password" class="p-4 border-blue-500/20 focus:border-blue-500">
+                    </div>
+                    <button onclick="window.updatePassword('d')" id="d-pass-btn" class="w-full py-5 bg-slate-900 border border-slate-800 hover:border-red-500/30 text-slate-400 hover:text-red-500 rounded-[2rem] font-black uppercase text-sm transition-all">Update Security Protocol</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MOBILE VIEW -->
+    <div class="mobile-view">
+        <header class="p-6 flex justify-between items-center glass sticky top-0 z-[1000]">
+            <h2 class="text-xl font-black tracking-tighter uppercase">ACCOUNT</h2>
+            <div class="flex gap-3">
+                <button onclick="window.showProfile()" class="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center font-black shadow-lg" id="m-user-init">U</button>
+                <button onclick="window.triggerLogout()" class="w-9 h-9 bg-slate-800 rounded-xl flex items-center justify-center text-red-500 border border-slate-700 shadow-lg"><i class="fas fa-power-off"></i></button>
+            </div>
+        </header>
+
+        <main class="p-4 space-y-6 pb-24">
+            <div class="glass p-6 rounded-[2.5rem] border border-white/5 shadow-2xl">
+                <div id="m-pending-badge" class="hidden mb-6 px-4 py-2 bg-yellow-500/10 text-yellow-500 text-[8px] font-black uppercase border border-yellow-500/20 rounded-xl text-center">Approval Pending</div>
+                <div class="space-y-4 mb-8">
+                    <div class="space-y-1"><label class="text-[7px] font-black text-slate-600 uppercase ml-2">Username</label><input type="text" id="m-username" disabled class="opacity-50 text-slate-400"></div>
+                    <div class="space-y-1"><label class="text-[7px] font-black text-slate-600 uppercase ml-2">Email</label><input type="email" id="m-email" placeholder="Email Address"></div>
+                    <div class="space-y-1"><label class="text-[7px] font-black text-slate-600 uppercase ml-2">Mobile</label><input type="text" id="m-mobile_no" placeholder="Mobile Number"></div>
+                    <div class="space-y-1"><label class="text-[7px] font-black text-slate-600 uppercase ml-2">Telegram</label><input type="text" id="m-telegram_id" placeholder="@handle"></div>
+                </div>
+                <button onclick="window.saveProfile('m')" id="m-save-btn" class="w-full bg-blue-600 py-5 rounded-3xl font-black text-xs uppercase shadow-xl active:scale-95 transition-all">Submit Changes</button>
+            </div>
+            
+            <div class="glass p-6 rounded-[2.5rem] border border-white/5 shadow-2xl">
+                <h3 class="text-[10px] font-black text-red-500 uppercase mb-6 tracking-widest">Security</h3>
+                <div class="space-y-4 mb-6">
+                    <input type="password" id="m-curr-pass" placeholder="Current Password">
+                    <input type="password" id="m-new-pass" placeholder="New Password">
+                </div>
+                <button onclick="window.updatePassword('m')" id="m-pass-btn" class="w-full bg-red-600/10 text-red-500 border border-red-500/20 py-5 rounded-3xl font-black text-xs uppercase shadow-xl active:scale-95 transition-all">Change Key</button>
+            </div>
+        </main>
+
+        <nav class="mobile-nav" id="mobile-bottom-nav"></nav>
+    </div>
+
+    <script type="module">
+        /**
+         * Account Logic - Insight Engine
+         * Author: Vishal Joshi (vishaljoshi9694@gmail.com)
+         */
+        import { initNavigation } from "./js/nav_manager.js";
+        import { checkAuth, getAuthHeaders, logout } from "./js/auth.js";
+        import { getUserProfile } from "./js/api.js";
+
+        initNavigation();
+        const user = checkAuth();
+        const init = user.username[0].toUpperCase();
+        if(document.getElementById('m-user-init')) document.getElementById('m-user-init').innerText = init;
+        if(document.getElementById('d-user-init')) document.getElementById('d-user-init').innerText = init;
+
+        async function loadProfile() {
+            try {
+                const profile = await getUserProfile();
+                if (profile) {
+                    ['d', 'm'].forEach(prefix => {
+                        const elU = document.getElementById(`${prefix}-username`); if(elU) elU.value = profile.username;
+                        const elR = document.getElementById(`${prefix}-role`); if(elR) elR.value = profile.role;
+                        const elE = document.getElementById(`${prefix}-email`); if(elE) elE.value = profile.email || '';
+                        const elM = document.getElementById(`${prefix}-mobile_no`); if(elM) elM.value = profile.mobile_no || '';
+                        const elT = document.getElementById(`${prefix}-telegram_id`); if(elT) elT.value = profile.telegram_id || '';
+                        if (profile.pending_profile_update) {
+                            const badge = document.getElementById(`${prefix}-pending-badge`); if(badge) badge.classList.remove('hidden');
+                        }
+                    });
+                }
+            } catch (e) { console.error("Profile Load Error:", e); }
+        }
+
+        window.saveProfile = async (prefix) => {
+            const btn = document.getElementById(`${prefix}-save-btn`);
+            const orig = btn.innerText; btn.innerText = "AUTHENTICATING..."; btn.disabled = true;
+            try {
+                const data = {
+                    email: document.getElementById(`${prefix}-email`).value,
+                    mobile_no: document.getElementById(`${prefix}-mobile_no`).value,
+                    telegram_id: document.getElementById(`${prefix}-telegram_id`).value
+                };
+                const res = await fetch('/api/auth/me', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+                    body: JSON.stringify(data)
+                });
+                if(res.ok) { alert('Request submitted! Our administrative team will review it shortly.'); loadProfile(); }
+                else alert('Access Denied: Error updating credentials');
+            } catch (e) { alert('Critical: Security link failed'); }
+            finally { btn.innerText = orig; btn.disabled = false; }
+        };
+
+        window.updatePassword = async (prefix) => {
+            const btn = document.getElementById(`${prefix}-pass-btn`);
+            const orig = btn.innerText; btn.innerText = "UPDATING..."; btn.disabled = true;
+            try {
+                const data = {
+                    current_password: document.getElementById(`${prefix}-curr-pass`).value,
+                    new_password: document.getElementById(`${prefix}-new-pass`).value
+                };
+                const res = await fetch('/api/auth/change-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+                    body: JSON.stringify(data)
+                });
+                if(res.ok) { alert('Security protocol updated successfully!'); }
+                else alert('Error: ' + (await res.json()).detail);
+            } catch (e) { alert('Update failed: Security link offline'); }
+            finally { btn.innerText = orig; btn.disabled = false; }
+        };
+
+        loadProfile();
+    </script>
+</body>
+</html>

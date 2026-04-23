@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Portfolio | Insight</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/mobile_unified.css">
+    <style>
+        .tabular-data { font-variant-numeric: tabular-nums; }
+        .pnl-green { color: #4ade80 !important; }
+        .pnl-red { color: #f87171 !important; }
+        .stat-label { font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.15em; color: #64748b; margin-bottom: 0.5rem; }
+        
+        .broker-pill { 
+            padding: 0.6rem 1.5rem; 
+            border-radius: 1rem; 
+            font-size: 10px; 
+            font-weight: 900; 
+            text-transform: uppercase; 
+            transition: all 0.3s; 
+            border: 1px solid #1e293b;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+        .broker-pill.active { background: #2563eb; color: white; border-color: #2563eb; box-shadow: 0 8px 15px rgba(37, 99, 235, 0.2); }
+        
+        /* Sidebar Visibility Fix - Now handled by CSS */
+        .main-container { flex-grow: 1; overflow-y: auto; }
+        .desktop-view { display: flex; height: 100vh; width: 100vw; overflow: hidden; }
+    </style>
+</head>
+<body class="force-auto">
+    <!-- Author: Vishal Joshi (vishaljoshi9694@gmail.com) -->
+    
+    <!-- DESKTOP -->
+    <div class="desktop-view">
+        <aside class="sidebar flex flex-col p-4" id="desktop-sidebar"></aside>
+
+        <main class="main-container custom-scrollbar bg-[#020617]">
+            <header class="p-8 flex justify-between items-center glass sticky top-0 z-50">
+                <div class="flex items-center gap-10">
+                    <h2 class="text-2xl font-black uppercase tracking-tighter text-white">Unified Portfolio</h2>
+                    <div id="d-broker-selector" class="flex gap-2 bg-slate-900/50 p-1 rounded-2xl border border-slate-800"></div>
+                </div>
+                <div class="flex gap-4">
+                    <button onclick="window.sync()" class="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center border border-slate-800 hover:text-blue-400 transition-all shadow-lg"><i class="fas fa-sync-alt" id="d-sync-icon"></i></button>
+                    <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center font-black shadow-lg text-white" id="d-user-init">U</div>
+                </div>
+            </header>
+            
+            <div class="p-8 space-y-10">
+                <!-- Stats Row -->
+                <div class="grid grid-cols-12 gap-8">
+                    <div class="col-span-9 grid grid-cols-4 gap-8">
+                        <div class="stat-card p-8 bg-slate-900/40 border border-white/5 rounded-[2rem]">
+                            <p class="stat-label">Available Cash</p>
+                            <h3 id="d-total-cash" class="text-2xl font-black font-mono text-blue-400 tabular-data">₹0.00</h3>
+                        </div>
+                        <div class="stat-card p-8 bg-slate-900/40 border border-white/5 rounded-[2rem]">
+                            <p class="stat-label">Invested Capital</p>
+                            <h3 id="d-total-invested" class="text-2xl font-black font-mono text-slate-100 tabular-data">₹0.00</h3>
+                        </div>
+                        <div class="stat-card p-8 bg-slate-900/40 border border-white/5 rounded-[2rem]">
+                            <p class="stat-label">Current Value</p>
+                            <h3 id="d-total-current" class="text-2xl font-black font-mono text-slate-100 tabular-data">₹0.00</h3>
+                        </div>
+                        <div class="stat-card p-8 bg-slate-900/40 border border-white/5 rounded-[2rem]">
+                            <p class="stat-label">Net Performance</p>
+                            <div class="flex flex-col">
+                                <h3 id="d-total-pnl" class="text-xl font-black font-mono tabular-data text-white">₹0.00</h3>
+                                <p id="d-pnl-pct" class="text-[10px] font-black tabular-data mt-1">0.00%</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-span-3 ai-pulse-card rounded-[2.5rem] p-8 flex flex-col justify-center border border-blue-500/10 shadow-2xl bg-blue-900/5">
+                        <div class="flex items-center gap-3 mb-4">
+                            <i class="fas fa-atom fa-spin-slow text-blue-400"></i>
+                            <span class="text-[9px] font-black text-blue-400 uppercase tracking-[0.3em]">Neural Advisor</span>
+                        </div>
+                        <p id="ai-market-narration" class="text-[12px] text-slate-300 font-medium leading-relaxed italic">Synthesizing real-time portfolio alpha...</p>
+                    </div>
+                </div>
+
+                <!-- Holdings Table -->
+                <div class="glass rounded-[3rem] overflow-hidden border border-white/5 shadow-2xl">
+                    <div class="p-8 border-b border-white/5 flex justify-between items-center bg-slate-900/30">
+                        <h4 class="font-black text-[10px] uppercase tracking-[0.2em] text-slate-400">Institutional Holdings</h4>
+                        <span class="text-[9px] font-bold text-slate-500 uppercase"><i class="fas fa-circle text-[6px] text-green-500 mr-2 animate-pulse"></i> Live Node Tracking</span>
+                    </div>
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-950/50 text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                            <tr>
+                                <th class="p-8">Asset / Node</th><th class="p-8 text-right">Volume</th><th class="p-8 text-right">Entry</th><th class="p-8 text-right">LTP</th><th class="p-8 text-right">Net P&L</th>
+                            </tr>
+                        </thead>
+                        <tbody id="d-holdings-body" class="divide-y divide-white/5"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MOBILE -->
+    <div class="mobile-view">
+        <header class="p-6 flex justify-between items-center glass sticky top-0 z-[1000]">
+            <h2 class="text-xl font-black tracking-tighter uppercase text-white">PORTFOLIO</h2>
+            <div class="flex gap-3">
+                <button onclick="window.sync()" class="w-9 h-9 bg-slate-800 rounded-xl flex items-center justify-center text-blue-400 border border-slate-700 shadow-lg"><i class="fas fa-sync-alt" id="m-sync-icon"></i></button>
+                <div class="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center font-black shadow-lg text-white" id="m-user-init">U</div>
+            </div>
+        </header>
+
+        <main class="p-4 space-y-8 pb-24 bg-[#020617] min-h-screen">
+            <div id="m-broker-selector" class="flex gap-2 overflow-x-auto no-scrollbar py-1"></div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="stat-card p-6 bg-slate-900 border border-white/5 shadow-2xl rounded-3xl">
+                    <p class="stat-label">Available</p>
+                    <h3 id="m-total-cash" class="text-xl font-black font-mono text-blue-400 tabular-data">₹0.00</h3>
+                </div>
+                <div class="stat-card p-6 bg-slate-900 border border-white/5 shadow-2xl rounded-3xl">
+                    <p class="stat-label">Performance</p>
+                    <h3 id="m-total-pnl" class="text-lg font-black font-mono tabular-data mb-0.5 text-white">₹0.00</h3>
+                    <p id="m-pnl-pct" class="text-[10px] font-black tabular-data">0.00%</p>
+                </div>
+            </div>
+
+            <div class="stat-card p-6 bg-slate-900 border border-white/5 shadow-2xl rounded-3xl grid grid-cols-2 gap-8">
+                <div><p class="stat-label">Invested</p><p id="m-total-invested" class="font-black text-slate-100 tabular-data font-mono">₹0.00</p></div>
+                <div class="text-right"><p class="stat-label">Current</p><p id="m-total-current" class="font-black text-slate-100 tabular-data font-mono">₹0.00</p></div>
+            </div>
+
+            <div class="ai-pulse-card rounded-3xl p-6 border border-blue-500/10 shadow-2xl bg-blue-900/5">
+                <p id="m-ai-market-narration" class="text-[11px] text-slate-300 font-medium leading-relaxed italic">Analyzing portfolio drifts...</p>
+            </div>
+
+            <div id="m-holdings-list" class="space-y-4"></div>
+        </main>
+
+        <nav class="mobile-nav" id="mobile-bottom-nav"></nav>
+    </div>
+
+    <script type="module">
+        /** Author: Vishal Joshi (vishaljoshi9694@gmail.com) **/
+        import { initNavigation } from "./js/nav_manager.js";
+        import { checkAuth } from "./js/auth.js";
+        import { getHoldings, getAllBalances, getAISummary } from "./js/api.js";
+        import { initMarketWS } from "./js/websocket.js";
+
+        // --- Core Init ---
+        initNavigation();
+        const user = checkAuth();
+        const initLetter = user.username[0].toUpperCase();
+        if(document.getElementById('d-user-init')) document.getElementById('d-user-init').innerText = initLetter;
+        if(document.getElementById('m-user-init')) document.getElementById('m-user-init').innerText = initLetter;
+
+        let masterData = null;
+        let selectedBroker = 'all';
+        const fmt = (v) => '₹' + parseFloat(v || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+
+        window.sync = async () => {
+            const icons = [document.getElementById('d-sync-icon'), document.getElementById('m-sync-icon')];
+            icons.forEach(i => i?.classList.add('fa-spin'));
+            
+            try {
+                const [hData, bData] = await Promise.all([getHoldings(), getAllBalances()]);
+                
+                // Robust data parsing
+                const h = hData || { holdings: [], total_invested: 0, total_current_value: 0, total_profit_loss: 0, total_profit_loss_percent: 0 };
+                const b = (bData && bData.brokers) ? bData.brokers : {};
+                
+                let manualTotal = 0;
+                Object.values(b).forEach(val => {
+                    manualTotal += parseFloat(val.availablecash || val.net || val.cash || 0);
+                });
+
+                masterData = { 
+                    holdings: h.holdings || [], 
+                    balances: b, 
+                    totalBalance: manualTotal > 0 ? manualTotal : parseFloat(bData?.total_balance || 0),
+                    totalInvested: parseFloat(h.total_invested || 0),
+                    totalCurrent: parseFloat(h.total_current_value || 0),
+                    totalPnL: parseFloat(h.total_profit_loss || 0),
+                    pnlPct: parseFloat(h.total_profit_loss_percent || 0)
+                };
+                
+                renderFilters();
+                refreshUI();
+                updateAI();
+            } catch (e) { console.error("Sync Error:", e); }
+            finally { icons.forEach(i => i?.classList.remove('fa-spin')); }
+        };
+
+        function renderFilters() {
+            if(!masterData) return;
+            const uniqueBrokers = ['all', ...new Set(masterData.holdings.map(item => item.broker_name))];
+            ['d-broker-selector', 'm-broker-selector'].forEach(id => {
+                const el = document.getElementById(id);
+                if(!el) return;
+                el.innerHTML = uniqueBrokers.map(br => `
+                    <button onclick="window.filterBy('${br}')" class="broker-pill ${selectedBroker === br ? 'active' : 'text-slate-500 bg-slate-950/50'}">
+                        ${br}
+                    </button>
+                `).join('');
+            });
+        }
+
+        window.filterBy = (name) => { selectedBroker = name; refreshUI(); renderFilters(); };
+
+        function refreshUI() {
+            if (!masterData) return;
+            const filtered = selectedBroker === 'all' ? masterData.holdings : masterData.holdings.filter(h => h.broker_name === selectedBroker);
+            
+            let totalPnL = 0; let totalInvested = 0; let totalCash = 0; let totalCurrent = 0;
+
+            filtered.forEach(h => {
+                const hPnL = parseFloat(h.profit_loss || 0);
+                const hInv = (parseFloat(h.quantity || 0) * parseFloat(h.avg_price || 0));
+                const hCur = (parseFloat(h.quantity || 0) * parseFloat(h.current_price || 0));
+                totalPnL += hPnL;
+                totalInvested += hInv;
+                totalCurrent += hCur;
+            });
+
+            if (selectedBroker === 'all') {
+                totalCash = masterData.totalBalance;
+            } else {
+                const b = masterData.balances[selectedBroker] || {};
+                totalCash = parseFloat(b.availablecash || b.net || b.cash || 0);
+            }
+            
+            // Fallback if zero and we have totalBalance
+            if (totalCash === 0 && selectedBroker === 'all') {
+                totalCash = masterData.totalBalance;
+            }
+
+            const pnlPct = totalInvested > 0 ? (totalPnL / totalInvested * 100) : 0;
+            const pnlColor = totalPnL >= 0 ? 'pnl-green' : 'pnl-red';
+            const sign = totalPnL >= 0 ? '+' : '';
+
+            // Update All Stats
+            ['d', 'm'].forEach(p => {
+                const cashEl = document.getElementById(`${p}-total-cash`); if(cashEl) cashEl.innerText = fmt(totalCash);
+                const invEl = document.getElementById(`${p}-total-invested`); if(invEl) invEl.innerText = fmt(totalInvested);
+                const curEl = document.getElementById(`${p}-total-current`); if(curEl) curEl.innerText = fmt(totalCurrent);
+                const pnlEl = document.getElementById(`${p}-total-pnl`); 
+                if(pnlEl) {
+                    pnlEl.innerText = sign + fmt(totalPnL);
+                    pnlEl.className = `${p==='d'?'text-2xl':'text-lg'} font-black font-mono tabular-data ${pnlColor}`;
+                }
+                const pctEl = document.getElementById(`${p}-pnl-pct`);
+                if(pctEl) {
+                    pctEl.innerText = `${sign}${pnlPct.toFixed(2)}%`;
+                    pctEl.className = `font-black tabular-data ${pnlColor} ${p==='d'?'text-[10px]':'text-[10px]'}`;
+                }
+            });
+
+            // Desktop Table
+            document.getElementById('d-holdings-body').innerHTML = filtered.map(h => `
+                <tr class="hover:bg-slate-900/30 transition-colors border-b border-white/5">
+                    <td class="p-8"><p class="font-black text-white uppercase tracking-tight">${h.symbol}</p><p class="text-[8px] text-slate-500 uppercase font-black tracking-widest mt-1">${h.broker_name}</p></td>
+                    <td class="p-8 text-right font-mono font-bold tabular-data text-white">${h.quantity}</td>
+                    <td class="p-8 text-right font-mono text-slate-500 tabular-data">₹${(h.avg_price || 0).toFixed(2)}</td>
+                    <td class="p-8 text-right font-mono font-black text-white tabular-data" id="ltp-${h.symbol}">₹${(h.current_price || 0).toFixed(2)}</td>
+                    <td class="p-8 text-right font-mono font-black tabular-data ${parseFloat(h.profit_loss) >= 0 ? 'pnl-green' : 'pnl-red'}" id="pnl-${h.symbol}">${parseFloat(h.profit_loss) >= 0 ? '+' : ''}₹${parseFloat(h.profit_loss || 0).toFixed(2)}</td>
+                </tr>
+            `).join('');
+
+            // Mobile List
+            document.getElementById('m-holdings-list').innerHTML = filtered.map(h => `
+                <div class="p-6 bg-slate-900 rounded-[2rem] border border-slate-800 flex justify-between items-center shadow-xl active:scale-95 transition-all">
+                    <div><p class="font-black text-sm text-white uppercase">${h.symbol}</p><p class="text-[9px] text-slate-500 uppercase font-black mt-1">${h.quantity} Units · ${h.broker_name}</p></div>
+                    <div class="text-right">
+                        <p class="font-black text-sm font-mono tabular-data ${parseFloat(h.profit_loss) >= 0 ? 'pnl-green' : 'pnl-red'}" id="m-pnl-${h.symbol}">${parseFloat(h.profit_loss) >= 0 ? '+' : ''}${parseFloat(h.profit_loss || 0).toFixed(1)}</p>
+                        <p class="text-[9px] text-slate-400 font-mono tabular-data" id="m-ltp-${h.symbol}">LTP: ${(h.current_price || 0).toFixed(1)}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function updateAI() {
+            try {
+                const ai = await getAISummary();
+                if(!ai || !ai.analyses) return;
+                const narrative = `Portfolio is reacting to real-time market drift. Neural core suggests ${ai.analyses[0]?.recommendation} for ${ai.analyses[0]?.symbol}. ${ai.summary || "Strategizing next tactical moves."}`;
+                const narrEl = document.getElementById('ai-market-narration'); if(narrEl) narrEl.innerText = narrative;
+                const mNarrEl = document.getElementById('m-ai-market-narration'); if(mNarrEl) mNarrEl.innerText = narrative;
+            } catch (e) {}
+        }
+
+        // Execution
+        window.sync = sync; 
+        sync(); 
+        setInterval(sync, 60000);
+
+        initMarketWS((tick) => {
+            if (!masterData) return;
+            masterData.holdings.forEach(h => {
+                if (tick.symbol === 'NIFTY 50' || h.symbol.includes(tick.symbol)) {
+                    const drift = (tick.change / 22500) * h.current_price;
+                    h.current_price += drift;
+                    h.profit_loss = (h.current_price - h.avg_price) * h.quantity;
+                }
+            });
+            refreshUI();
+        });
+    </script>
+</body>
+</html>
